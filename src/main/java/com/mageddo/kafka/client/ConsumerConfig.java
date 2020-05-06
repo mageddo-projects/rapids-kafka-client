@@ -1,5 +1,6 @@
 package com.mageddo.kafka.client;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
@@ -16,24 +17,25 @@ import java.util.Map;
 @Builder(toBuilder = true)
 @Accessors(chain = true)
 @NoArgsConstructor
+@AllArgsConstructor
 public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
 
   @Getter
-  private Map<String, Object> props = new HashMap<>();
-
-  @NonNull
-  private String groupId;
+  private final Map<String, Object> props = new HashMap<>();
 
   @NonNull
   private Collection<String> topics;
 
   @NonNull
+  @Builder.Default
   private Duration timeout = ConsumingConfigDefault.DEFAULT_POLL_TIMEOUT;
 
   @NonNull
+  @Builder.Default
   private Duration interval = ConsumingConfigDefault.FPS_30_DURATION;
 
   @NonNull
+  @Builder.Default
   private RetryPolicy retryPolicy = ConsumingConfigDefault.DEFAULT_RETRY_STRATEGY;
 
   private RecoverCallback<K, V> recoverCallback;

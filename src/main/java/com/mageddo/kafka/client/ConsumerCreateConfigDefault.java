@@ -13,11 +13,7 @@ import java.util.Map;
 @Builder
 public class ConsumerCreateConfigDefault<K, V> implements ConsumerCreateConfig<K, V> {
 
-  @Getter
   private Map<String, Object> props = new HashMap<>();
-
-  @NonNull
-  private String groupId;
 
   @NonNull
   private Collection<String> topics;

@@ -34,7 +34,7 @@ public class BatchConsumer<K, V> {
 
     retrier.run(() -> {
       if (log.isTraceEnabled()) {
-        log.debug("status=consuming, records={}", records);
+        log.trace("status=consuming, records={}", records);
       }
       consumingConfig
           .getBatchCallback()

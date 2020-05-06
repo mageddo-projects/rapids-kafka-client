@@ -2,6 +2,8 @@ package com.mageddo.kafka.client;
 
 import java.util.ArrayList;
 
+import lombok.extern.slf4j.Slf4j;
+
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
 
@@ -10,6 +12,7 @@ import lombok.Value;
 
 import static com.mageddo.kafka.client.RetryPolicyConverter.retryPolicyToFailSafeRetryPolicy;
 
+@Slf4j
 @Value
 @Builder
 public class Retrier {
@@ -21,14 +24,27 @@ public class Retrier {
   public void run(final Callback run) {
     Failsafe
         .with(
-            Fallback.ofAsync(it -> {
-              run.call();
+            Fallback.ofAsync(ctx -> {
+              if(log.isTraceEnabled()){
+                log.trace("status=onExhausted, ctx={}", ctx);
+              }
+              onExhausted.call();
               return null;
             }),
             retryPolicyToFailSafeRetryPolicy(this.retryPolicy)
-                .onRetry(it -> this.onRetry.call())
+                .onRetry(ctx -> {
+                  if(log.isTraceEnabled()){
+                    log.trace("status=onRetry, ctx={}", ctx);
+                  }
+                  this.onRetry.call();
+                })
                 .handle(new ArrayList<>(this.retryPolicy.getRetryableExceptions()))
         )
-        .run(ctx -> this.onExhausted.call());
+        .run(ctx -> {
+          if(log.isTraceEnabled()){
+            log.trace("status=onRun, ctx={}", ctx);
+          }
+          run.call();
+        });
   }
 }
