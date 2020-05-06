@@ -1,19 +1,15 @@
-package com.mageddo.kafka.client;
+import java.time.Duration;
+import java.util.Collections;
 
-import io.quarkus.runtime.StartupEvent;
-import io.quarkus.scheduler.Scheduled;
-import io.quarkus.scheduler.ScheduledExecution;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.producer.Producer;
-import org.apache.kafka.clients.producer.ProducerRecord;
+import com.mageddo.kafka.client.ConsumerConfig;
+import com.mageddo.kafka.client.ConsumerFactory;
+import com.mageddo.kafka.client.RetryPolicy;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.event.Observes;
-import java.time.Duration;
-import java.util.Collections;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
@@ -22,17 +18,11 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL
 import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG;
 
 @Slf4j
-@ApplicationScoped
-@RequiredArgsConstructor
 public class StockPriceMDB {
 
-  public static final String EVERY_5_SECONDS = "0/5 * * * * ?";
+  public static void main(String[] args) {
 
-  private final ConsumerFactory consumerFactory;
-  private final Producer<String, byte[]> producer;
-
-  public void consume(@Observes StartupEvent ev) {
-    log.info("status=consume fired");
+    final ConsumerFactory consumerFactory = new ConsumerFactory();
     final ConsumerConfig<String, byte[]> consumerConfig = new ConsumerConfig<String, byte[]>()
         .setTopics(Collections.singletonList("stock_changed"))
         .setGroupId("stock_client")
@@ -48,26 +38,26 @@ public class StockPriceMDB {
             .build()
         )
         .setBatchCallback((consumer, records, e) -> {
-          for (final var record : records) {
+          for (final ConsumerRecord<String, byte[]> record : records) {
             throw new RuntimeException("an error occurred");
 //            log.info("key={}, value={}", record.key(), new String(record.value()));
           }
         });
 
-    this.consumerFactory.consume(consumerConfig);
+    consumerFactory.consume(consumerConfig);
   }
 
-  @Scheduled(cron = EVERY_5_SECONDS)
-  void notifyStockUpdates(ScheduledExecution execution) {
-    producer.send(new ProducerRecord<>(
-        "stock_changed",
-        String.format("stock=PAGS, price=%.2f", Math.random() * 100)
-            .getBytes()
-    ));
-    log.info(
-        "status=scheduled, scheduled-fire-time={}, fire-time={}",
-        execution.getScheduledFireTime(),
-        execution.getFireTime()
-    );
-  }
+//
+//  void notifyStockUpdates(ScheduledExecution execution) {
+//    producer.send(new ProducerRecord<>(
+//        "stock_changed",
+//        String.format("stock=PAGS, price=%.2f", Math.random() * 100)
+//            .getBytes()
+//    ));
+//    log.info(
+//        "status=scheduled, scheduled-fire-time={}, fire-time={}",
+//        execution.getScheduledFireTime(),
+//        execution.getFireTime()
+//    );
+//  }
 }

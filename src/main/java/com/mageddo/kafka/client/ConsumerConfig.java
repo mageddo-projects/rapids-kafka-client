@@ -1,5 +1,6 @@
 package com.mageddo.kafka.client;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
+@Builder(toBuilder = true)
 @Accessors(chain = true)
 @NoArgsConstructor
 public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {

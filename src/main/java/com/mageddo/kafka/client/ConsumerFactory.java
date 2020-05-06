@@ -1,16 +1,5 @@
 package com.mageddo.kafka.client;
 
-import lombok.extern.slf4j.Slf4j;
-import net.jodah.failsafe.Failsafe;
-import net.jodah.failsafe.Fallback;
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
-
-import javax.enterprise.context.ApplicationScoped;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,11 +8,22 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.mageddo.kafka.RetryPolicyConverter.retryPolicyToFailSafeRetryPolicy;
+import net.jodah.failsafe.Failsafe;
+import net.jodah.failsafe.Fallback;
+
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.TopicPartition;
+
+import lombok.extern.slf4j.Slf4j;
+
+import static com.mageddo.kafka.client.RetryPolicyConverter.retryPolicyToFailSafeRetryPolicy;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 @Slf4j
-@ApplicationScoped
 public class ConsumerFactory {
 
   public <K, V> void consume(ConsumerConfig<K, V> consumerConfig) {
