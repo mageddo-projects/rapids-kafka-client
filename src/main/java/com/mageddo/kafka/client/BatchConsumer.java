@@ -26,9 +26,9 @@ public class BatchConsumer<K, V> {
             commitFirstRecord(consumer, records, partition);
           }
         })
-        .onExhausted(() -> {
+        .onExhausted((lastFailure) -> {
           log.info("status=exhausted-tries, records={}", records.count());
-          records.forEach(record -> Consumers.doRecoverWhenAvailable(consumer, consumingConfig, record));
+          records.forEach(record -> Consumers.doRecoverWhenAvailable(consumer, consumingConfig, record, lastFailure));
         })
         .build();
 

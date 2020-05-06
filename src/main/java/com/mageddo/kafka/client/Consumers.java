@@ -24,10 +24,11 @@ public class Consumers {
   public static <K, V> void doRecoverWhenAvailable(
       Consumer<K, V> consumer,
       ConsumingConfig<K, V> consumingConfig,
-      ConsumerRecord<K, V> record
+      ConsumerRecord<K, V> record,
+      Throwable lastFailure
   ) {
     if (consumingConfig.getRecoverCallback() != null) {
-      consumingConfig.getRecoverCallback().recover(record);
+      consumingConfig.getRecoverCallback().recover(record, lastFailure);
       commitSyncRecord(consumer, record);
     } else {
       log.warn("status=no recover callback was specified");

@@ -1,6 +1,7 @@
 package com.mageddo.kafka.client;
 
 import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,7 +20,7 @@ public class Retrier {
 
   private RetryPolicy retryPolicy;
   private Callback onRetry;
-  private Callback onExhausted;
+  private Consumer<Throwable> onExhausted;
 
   public void run(final Callback run) {
     Failsafe
@@ -28,7 +29,7 @@ public class Retrier {
               if(log.isTraceEnabled()){
                 log.trace("status=onExhausted, ctx={}", ctx);
               }
-              onExhausted.call();
+              onExhausted.accept(ctx.getLastFailure());
               return null;
             }),
             retryPolicyToFailSafeRetryPolicy(this.retryPolicy)

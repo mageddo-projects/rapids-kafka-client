@@ -1,4 +1,4 @@
-import java.net.http.HttpClient;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -64,13 +64,19 @@ public class StockPriceMDB {
         .withProp(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
         .setRetryPolicy(RetryPolicy
             .builder()
-            .maxTries(3)
+            .maxTries(1)
             .delay(Duration.ofSeconds(29))
             .build()
         )
+        .setRecoverCallback((record, lastFailure) -> {
+          log.info("status=recovering, record={}", new String(record.value()));
+        })
         .setBatchCallback((consumer, records, e) -> {
           for (final ConsumerRecord<String, byte[]> record : records) {
-//            throw new RuntimeException("an error occurred");
+            final double randomValue = Math.random();
+            if(randomValue > 0.5 && randomValue < 0.8){
+              throw new RuntimeException("an error occurred");
+            }
             log.info("key={}, value={}", record.key(), new String(record.value()));
           }
         });

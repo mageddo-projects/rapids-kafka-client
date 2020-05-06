@@ -1,5 +1,6 @@
 package com.mageddo.kafka.client;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-@Builder(toBuilder = true)
+@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
 @Accessors(chain = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -49,4 +50,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return this;
   }
 
+  public ConsumerConfig<K, V> copy(){
+    return this.toBuilder().build();
+  }
 }

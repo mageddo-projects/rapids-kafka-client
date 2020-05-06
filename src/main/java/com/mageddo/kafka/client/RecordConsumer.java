@@ -21,9 +21,9 @@ public class RecordConsumer<K, V> {
       final AtomicBoolean recovered = new AtomicBoolean();
       Retrier
           .builder()
-          .onExhausted(() -> {
+          .onExhausted((lastFailure) -> {
             log.info("exhausted tries");
-            Consumers.doRecoverWhenAvailable(consumer, consumingConfig, record);
+            Consumers.doRecoverWhenAvailable(consumer, consumingConfig, record, lastFailure);
             recovered.set(true);
           })
           .onRetry(() -> {
