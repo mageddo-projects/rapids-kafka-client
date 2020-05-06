@@ -32,7 +32,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZE
 @Slf4j
 public class StockPriceMDB {
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws InterruptedException {
 
     final Map<String, Object> props = new LinkedHashMap<>();
     props.put(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
@@ -68,33 +68,24 @@ public class StockPriceMDB {
             .delay(Duration.ofSeconds(29))
             .build()
         )
+        .setConsumers(3)
         .setRecoverCallback((record, lastFailure) -> {
           log.info("status=recovering, record={}", new String(record.value()));
         })
         .setBatchCallback((consumer, records, e) -> {
           for (final ConsumerRecord<String, byte[]> record : records) {
             final double randomValue = Math.random();
-            if(randomValue > 0.5 && randomValue < 0.8){
-              throw new RuntimeException("an error occurred");
-            }
+//            if(randomValue > 0.5 && randomValue < 0.8){
+//              throw new RuntimeException("an error occurred");
+//            }
             log.info("key={}, value={}", record.key(), new String(record.value()));
           }
         });
 
     consumerFactory.consume(consumerConfig);
+    log.info("waiting termination....");
+    Thread.currentThread().join();
+    log.info("exiting......");
   }
 
-//
-//  void notifyStockUpdates(ScheduledExecution execution) {
-//    producer.send(new ProducerRecord<>(
-//        "stock_changed",
-//        String.format("stock=PAGS, price=%.2f", Math.random() * 100)
-//            .getBytes()
-//    ));
-//    log.info(
-//        "status=scheduled, scheduled-fire-time={}, fire-time={}",
-//        execution.getScheduledFireTime(),
-//        execution.getFireTime()
-//    );
-//  }
 }

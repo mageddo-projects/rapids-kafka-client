@@ -24,6 +24,9 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   @Getter
   private final Map<String, Object> props = new HashMap<>();
 
+  @Builder.Default
+  private int consumers = 1;
+
   @NonNull
   private Collection<String> topics;
 
