@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -55,8 +54,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return this;
   }
 
-  public ConsumerConfig<K, V> copy(){
-    return this.toBuilder().build();
+  public ConsumerConfig<K, V> copy() {
+    return ConsumerConfigBuilder.class.cast(this.toBuilder()).build();
   }
 
   public Map<String, Object> props() {
@@ -64,11 +63,16 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return Collections.unmodifiableMap(this.props);
   }
 
-  public static class ConsumerConfigBuilderx {
+  public static class ConsumerConfigBuilder<K, V> {
 
-    ////    public ConsumerConfigBuilder topics(String ... topics){
-////      this.topics = Arrays.asList(topics);
-////      return this;
-////    }
+    public ConsumerConfigBuilder<K, V> topics(String... topics) {
+      this.topics = Arrays.asList(topics);
+      return this;
+    }
+
+    public ConsumerConfigBuilder<K, V> topics(Collection<String> topics) {
+      this.topics = topics;
+      return this;
+    }
   }
 }
