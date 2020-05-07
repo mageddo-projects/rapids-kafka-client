@@ -7,6 +7,9 @@ import org.apache.kafka.common.PartitionInfo;
 @UtilityClass
 public class PartitionInfoTemplates {
   public static PartitionInfo build(String topic){
-    return new PartitionInfo(topic, 1, null, null, null);
+    return build(topic, 1);
+  }
+  public static PartitionInfo build(String topic, int partition){
+    return new PartitionInfo(topic, partition, null, null, null);
   }
 }

@@ -12,6 +12,10 @@ import lombok.experimental.UtilityClass;
 public class ConsumerConfigTemplates {
 
   public static <K, V> ConsumerConfig<K, V> build() {
+    return ConsumerConfigTemplates.<K, V>builder().build();
+  }
+
+  public static <K, V> ConsumerConfig.ConsumerConfigBuilder<K, V> builder() {
     return ConsumerConfig.<K, V>builder()
         .batchCallback((consumer, records, error) -> System.out.println("batch callback"))
         .callback((consumer, record, error) -> System.out.println("callback"))
@@ -26,7 +30,6 @@ public class ConsumerConfigTemplates {
         .recoverCallback((record, lastFailure) -> System.out.println("recover callback"))
         .topics(Collections.singleton("fruit_topic"))
         .timeout(Duration.ofMillis(100))
-        .build()
         ;
   }
 
