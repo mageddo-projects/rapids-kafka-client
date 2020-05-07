@@ -5,12 +5,12 @@ import java.time.Duration;
 public interface ConsumingConfig<K, V> {
 
     /**
-     * The callback to be called after all tries be exhausted
+     * The callback to be called after all retries be exhausted
      */
   RecoverCallback<K, V> recoverCallback();
 
   /**
-   * The callback which will be called after poll the message
+   * The callback which will be called after poll the {@link org.apache.kafka.clients.consumer.ConsumerRecords}
    */
   ConsumeCallback<K, V> callback();
 
@@ -29,6 +29,9 @@ public interface ConsumingConfig<K, V> {
    */
   Duration interval();
 
+  /**
+   * How to make retries when consume callback causes exceptions
+   */
   RetryPolicy retryPolicy();
 
 }
