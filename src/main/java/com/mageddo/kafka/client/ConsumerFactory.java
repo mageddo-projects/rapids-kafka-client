@@ -22,7 +22,7 @@ public class ConsumerFactory<K, V> {
 
     this.checkReasonablePollInterval(consumerConfig);
 
-    final KafkaConsumer<K, V> firstConsumer = create(consumerConfig);
+    final Consumer<K, V> firstConsumer = create(consumerConfig);
     final List<Consumer<K, V>> consumers = createConsumers(consumerConfig, firstConsumer);
     final Deque<PartitionInfo> partitions = new LinkedList<>(getAllPartitions(firstConsumer, consumerConfig.topics()));
     final int partitionsByConsumer = calcPartitionsByConsumer(consumerConfig, partitions.size());
@@ -42,7 +42,7 @@ public class ConsumerFactory<K, V> {
     return Math.max(1, partitions / consumerConfig.consumers());
   }
 
-  private List<Consumer<K, V>> createConsumers(ConsumerConfig<K, V> consumerConfig, KafkaConsumer<K, V> firstConsumer) {
+  private List<Consumer<K, V>> createConsumers(ConsumerConfig<K, V> consumerConfig, Consumer<K, V> firstConsumer) {
     final List<Consumer<K, V>> consumers = new ArrayList<>();
     consumers.add(firstConsumer);
     for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
@@ -66,7 +66,7 @@ public class ConsumerFactory<K, V> {
     return partitions;
   }
 
-  private List<PartitionInfo> getAllPartitions(KafkaConsumer<K, V> consumer, Collection<String> topics) {
+  private List<PartitionInfo> getAllPartitions(Consumer<K, V> consumer, Collection<String> topics) {
     final List<PartitionInfo> partitions = new ArrayList<>();
     for (final String topic : topics) {
       partitions.addAll(consumer.partitionsFor(topic));
@@ -74,7 +74,7 @@ public class ConsumerFactory<K, V> {
     return partitions;
   }
 
-  private KafkaConsumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
+  Consumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
     return new KafkaConsumer<>(consumerConfig.props());
   }
 
@@ -94,15 +94,19 @@ public class ConsumerFactory<K, V> {
         .toMillis();
 
     if (currentPollInterval < retryMaxWaitTime) {
-      log.warn(
-          "msg=your 'max.poll.interval.ms' is set to a value less than the retry policy, it will cause consumer "
-              + "rebalancing, increase 'max.poll.interval.ms' or decrease the retry policy delay or retries, "
-              + "max.poll.interval.ms={}, retryMaxWaitTime={} (retries={}, delay={})",
-          Duration.ofMillis(currentPollInterval),
-          Duration.ofMillis(retryMaxWaitTime),
-          retryPolicy.getMaxTries(),
-          retryPolicy.getDelay()
-      );
+      notifyNotRecommendedRetryPolicy(currentPollInterval, retryPolicy, retryMaxWaitTime);
     }
+  }
+
+  void notifyNotRecommendedRetryPolicy(int currentPollInterval, RetryPolicy retryPolicy, long retryMaxWaitTime) {
+    log.warn(
+        "msg=your 'max.poll.interval.ms' is set to a value less than the retry policy, it will cause consumer "
+            + "rebalancing, increase 'max.poll.interval.ms' or decrease the retry policy delay or retries, "
+            + "max.poll.interval.ms={}, retryMaxWaitTime={} (retries={}, delay={})",
+        Duration.ofMillis(currentPollInterval),
+        Duration.ofMillis(retryMaxWaitTime),
+        retryPolicy.getMaxTries(),
+        retryPolicy.getDelay()
+    );
   }
 }
