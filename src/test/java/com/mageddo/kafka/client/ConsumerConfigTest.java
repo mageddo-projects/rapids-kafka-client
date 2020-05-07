@@ -1,11 +1,8 @@
 package com.mageddo.kafka.client;
 
-import java.util.Collections;
-
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class ConsumerConfigTest {
@@ -25,7 +22,7 @@ class ConsumerConfigTest {
         .toString();
 
     //assert
-    assertEquals("{enable.auto.commit=false}", props);
+    assertEquals("{enable.auto.commit=false, bootstrap.servers=localhost:9092}", props);
 
   }
 

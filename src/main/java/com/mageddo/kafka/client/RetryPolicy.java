@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 
 @Value
-@Builder(builderClassName = "RetryPolicyBuilder")
+@Builder
 public class RetryPolicy {
 
   @Builder.Default

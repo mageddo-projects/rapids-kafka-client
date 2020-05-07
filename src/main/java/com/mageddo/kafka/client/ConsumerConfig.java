@@ -15,6 +15,7 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 
 @Data
@@ -62,6 +63,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
 
   public Map<String, Object> props() {
     this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
+    this.prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     return Collections.unmodifiableMap(this.props);
   }
 
