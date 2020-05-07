@@ -43,7 +43,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
               log.info("status=consuming, record={}", record);
             }
             consumingConfig
-                .getCallback()
+                .callback()
                 .accept(consumer, record, null);
           });
       if (recovered.get()) {

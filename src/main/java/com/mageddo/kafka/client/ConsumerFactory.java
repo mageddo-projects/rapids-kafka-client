@@ -24,7 +24,7 @@ public class ConsumerFactory<K, V> {
 
     final KafkaConsumer<K, V> firstConsumer = create(consumerConfig);
     final List<Consumer<K, V>> consumers = createConsumers(consumerConfig, firstConsumer);
-    final Deque<PartitionInfo> partitions = new LinkedList<>(getAllPartitions(firstConsumer, consumerConfig.getTopics()));
+    final Deque<PartitionInfo> partitions = new LinkedList<>(getAllPartitions(firstConsumer, consumerConfig.topics()));
     final int partitionsByConsumer = calcPartitionsByConsumer(consumerConfig, partitions.size());
     for (final Consumer<K, V> consumer : consumers) {
       final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, partitionsByConsumer);
@@ -39,20 +39,20 @@ public class ConsumerFactory<K, V> {
   }
 
   private int calcPartitionsByConsumer(ConsumerConfig<K, V> consumerConfig, int partitions) {
-    return Math.max(1, partitions / consumerConfig.getConsumers());
+    return Math.max(1, partitions / consumerConfig.consumers());
   }
 
   private List<Consumer<K, V>> createConsumers(ConsumerConfig<K, V> consumerConfig, KafkaConsumer<K, V> firstConsumer) {
     final List<Consumer<K, V>> consumers = new ArrayList<>();
     consumers.add(firstConsumer);
-    for (int i = 0; i < consumerConfig.getConsumers() - 1; i++) {
+    for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
       consumers.add(create(consumerConfig));
     }
     return consumers;
   }
 
   private ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
-    if(consumerConfig.getBatchCallback() != null){
+    if(consumerConfig.batchCallback() != null){
       return new BatchConsumer<>(consumer, consumerConfig);
     }
     return new RecordConsumer<>(consumer, consumerConfig);
@@ -75,7 +75,7 @@ public class ConsumerFactory<K, V> {
   }
 
   private KafkaConsumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
-    return new KafkaConsumer<>(consumerConfig.getProps());
+    return new KafkaConsumer<>(consumerConfig.props());
   }
 
   private void checkReasonablePollInterval(ConsumerConfig<K, V> consumerConfig) {
@@ -84,10 +84,10 @@ public class ConsumerFactory<K, V> {
         .toMillis();
 
     final int currentPollInterval = (int) consumerConfig
-        .getProps()
+        .props()
         .getOrDefault(MAX_POLL_INTERVAL_MS_CONFIG, defaultPollInterval);
 
-    final RetryPolicy retryPolicy = consumerConfig.getRetryPolicy();
+    final RetryPolicy retryPolicy = consumerConfig.retryPolicy();
 
     final long retryMaxWaitTime = retryPolicy
         .calcMaxTotalWaitTime()

@@ -3,12 +3,14 @@ package com.mageddo.kafka.client;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.Accessors;
 
 import java.time.Duration;
 
 @Value
 @Builder
-public class ConsumingConfigDefault<K, V> implements ConsumingConfig<K, V> {
+@Accessors(fluent = true)
+public class DefaultConsumingConfig<K, V> implements ConsumingConfig<K, V> {
 
   public static final int FPS_30 = 1000 / 30;
   public static final Duration FPS_30_DURATION = Duration.ofMillis(FPS_30);

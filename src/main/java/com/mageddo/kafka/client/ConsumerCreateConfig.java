@@ -5,14 +5,14 @@ import java.util.Map;
 
 public interface ConsumerCreateConfig<K, V> {
 
-  Map<String, Object> getProps();
+  Map<String, Object> props();
 
-  Collection<String> getTopics();
+  Collection<String> topics();
 
   ConsumerCreateConfig<K, V> prop(String k, Object v);
 
   /**
    * How many threads create for the topic
    */
-  int getConsumers();
+  int consumers();
 }

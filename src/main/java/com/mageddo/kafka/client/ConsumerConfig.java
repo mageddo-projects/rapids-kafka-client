@@ -16,7 +16,7 @@ import java.util.Map;
 
 @Data
 @Builder(toBuilder = true, access = AccessLevel.PRIVATE)
-@Accessors(chain = true)
+@Accessors(chain = true, fluent = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
@@ -32,15 +32,15 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
 
   @NonNull
   @Builder.Default
-  private Duration timeout = ConsumingConfigDefault.DEFAULT_POLL_TIMEOUT;
+  private Duration timeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
 
   @NonNull
   @Builder.Default
-  private Duration interval = ConsumingConfigDefault.FPS_30_DURATION;
+  private Duration interval = DefaultConsumingConfig.FPS_30_DURATION;
 
   @NonNull
   @Builder.Default
-  private RetryPolicy retryPolicy = ConsumingConfigDefault.DEFAULT_RETRY_STRATEGY;
+  private RetryPolicy retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
 
   private RecoverCallback<K, V> recoverCallback;
 

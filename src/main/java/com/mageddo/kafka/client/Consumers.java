@@ -27,8 +27,8 @@ public class Consumers {
       ConsumerRecord<K, V> record,
       Throwable lastFailure
   ) {
-    if (consumingConfig.getRecoverCallback() != null) {
-      consumingConfig.getRecoverCallback().recover(record, lastFailure);
+    if (consumingConfig.recoverCallback() != null) {
+      consumingConfig.recoverCallback().recover(record, lastFailure);
       commitSyncRecord(consumer, record);
     } else {
       log.warn("status=no recover callback was specified");

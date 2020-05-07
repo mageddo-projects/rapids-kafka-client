@@ -49,31 +49,30 @@ public class StockPriceMDB {
                 "stock_client_v2",
                 String.format("stock=PAGS, price=%.2f", Math.random() * 100).getBytes()
             ));
-            TimeUnit.SECONDS.sleep(3);
+            TimeUnit.MILLISECONDS.sleep(3000);
           }
         });
 
     final ConsumerFactory<String, byte[]> consumerFactory = new ConsumerFactory<>();
     final ConsumerConfig<String, byte[]> consumerConfig = new ConsumerConfig<String, byte[]>()
-//        .setTopics(Collections.singletonList("stock_changed"))
-        .setTopics(Collections.singletonList("stock_client_v2"))
+        .topics(Collections.singletonList("stock_client_v2"))
         .prop(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(2)
             .toMillis())
         .prop(GROUP_ID_CONFIG, "stock_client")
         .prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
         .prop(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
-        .setRetryPolicy(RetryPolicy
+        .retryPolicy(RetryPolicy
             .builder()
             .maxTries(1)
             .delay(Duration.ofSeconds(29))
             .build()
         )
-        .setConsumers(11)
-        .setRecoverCallback((record, lastFailure) -> {
+        .consumers(11)
+        .recoverCallback((record, lastFailure) -> {
           log.info("status=recovering, record={}", new String(record.value()));
         })
-        .setBatchCallback((consumer, records, e) -> {
+        .batchCallback((consumer, records, e) -> {
           for (final ConsumerRecord<String, byte[]> record : records) {
             final double randomValue = Math.random();
 //            if(randomValue > 0.5 && randomValue < 0.8){

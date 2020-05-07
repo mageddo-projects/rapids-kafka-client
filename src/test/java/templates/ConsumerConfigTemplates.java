@@ -13,19 +13,19 @@ public class ConsumerConfigTemplates {
 
   public static <K, V> ConsumerConfig<K, V> builder() {
     return new ConsumerConfig<K, V>()
-        .setBatchCallback((consumer, records, error) -> System.out.println("batch callback"))
-        .setCallback((consumer, record, error) -> System.out.println("callback"))
-        .setConsumers(3)
-        .setInterval(Duration.ofMillis(1000 / 3))
-        .setRetryPolicy(RetryPolicy
+        .batchCallback((consumer, records, error) -> System.out.println("batch callback"))
+        .callback((consumer, record, error) -> System.out.println("callback"))
+        .consumers(3)
+        .interval(Duration.ofMillis(1000 / 3))
+        .retryPolicy(RetryPolicy
             .builder()
             .maxTries(2)
             .delay(Duration.ofMinutes(1))
             .build()
         )
-        .setRecoverCallback((record, lastFailure) -> System.out.println("recover callback"))
-        .setTopics(Collections.singleton("data_topic"))
-        .setTimeout(Duration.ofMillis(100))
+        .recoverCallback((record, lastFailure) -> System.out.println("recover callback"))
+        .topics(Collections.singleton("data_topic"))
+        .timeout(Duration.ofMillis(100))
         ;
   }
 

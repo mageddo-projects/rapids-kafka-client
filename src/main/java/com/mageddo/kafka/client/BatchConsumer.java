@@ -26,7 +26,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   ) {
     final Retrier retrier = Retrier
         .builder()
-        .retryPolicy(consumingConfig.getRetryPolicy())
+        .retryPolicy(consumingConfig.retryPolicy())
         .onRetry(() -> {
           log.info("failed to consume");
           for (final TopicPartition partition : records.partitions()) {
@@ -44,7 +44,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
         log.trace("status=consuming, records={}", records);
       }
       consumingConfig
-          .getBatchCallback()
+          .batchCallback()
           .accept(consumer, records, null);
     });
   }

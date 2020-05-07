@@ -51,13 +51,13 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
   }
 
   public void poll(Consumer<K, V> consumer, ConsumingConfig<K, V> consumingConfig) {
-    if (consumingConfig.getBatchCallback() == null && consumingConfig.getCallback() == null) {
+    if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
       throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
     }
-    final boolean batchConsuming = consumingConfig.getBatchCallback() != null;
+    final boolean batchConsuming = consumingConfig.batchCallback() != null;
     while (true) {
       try {
-        final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.getTimeout());
+        final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.timeout());
         if (log.isTraceEnabled()) {
           log.trace("status=polled, records={}", records.count());
         }
@@ -66,18 +66,18 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
         log.warn("status=consuming-error", e);
         if (batchConsuming) {
           consumingConfig
-              .getBatchCallback()
+              .batchCallback()
               .accept(consumer, null, e);
         } else {
           consumingConfig
-              .getCallback()
+              .callback()
               .accept(consumer, null, e);
         }
       }
       try {
         TimeUnit.MILLISECONDS.sleep(
             consumingConfig
-                .getInterval()
+                .interval()
                 .toMillis()
         );
       } catch (InterruptedException e) {
