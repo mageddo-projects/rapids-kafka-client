@@ -2,6 +2,8 @@ package com.mageddo.kafka.client;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import lombok.RequiredArgsConstructor;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -9,8 +11,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RecordConsumer<K, V> {
+@RequiredArgsConstructor
+public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
 
+  private final Consumer<K, V> consumer;
+  private final ConsumerConfig<K,V> consumerConfig;
+
+  @Override
   public void consume(
       Consumer<K, V> consumer,
       ConsumingConfig<K, V> consumingConfig,
@@ -46,6 +53,11 @@ public class RecordConsumer<K, V> {
         return;
       }
     }
+  }
+
+  @Override
+  Consumer<K, V> consumer() {
+    return this.consumer;
   }
 
 }

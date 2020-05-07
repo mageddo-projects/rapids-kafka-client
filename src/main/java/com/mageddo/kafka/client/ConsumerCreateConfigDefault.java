@@ -21,7 +21,7 @@ public class ConsumerCreateConfigDefault<K, V> implements ConsumerCreateConfig<K
   @Builder.Default
   private int consumers = 1;
 
-  public ConsumerCreateConfigDefault<K, V> withProp(String k, Object v) {
+  public ConsumerCreateConfigDefault<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
   }

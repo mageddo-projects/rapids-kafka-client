@@ -48,7 +48,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
 
   private BatchConsumeCallback<K, V> batchCallback;
 
-  public ConsumerConfig<K, V> withProp(String k, Object v) {
+  public ConsumerConfig<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
   }

@@ -9,7 +9,7 @@ public interface ConsumerCreateConfig<K, V> {
 
   Collection<String> getTopics();
 
-  ConsumerCreateConfig<K, V> withProp(String k, Object v);
+  ConsumerCreateConfig<K, V> prop(String k, Object v);
 
   /**
    * How many threads create for the topic

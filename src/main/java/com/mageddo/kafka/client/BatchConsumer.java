@@ -2,6 +2,8 @@ package com.mageddo.kafka.client;
 
 import java.util.List;
 
+import lombok.RequiredArgsConstructor;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -10,8 +12,13 @@ import org.apache.kafka.common.TopicPartition;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class BatchConsumer<K, V> {
+@RequiredArgsConstructor
+public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
 
+  private final Consumer<K, V> consumer;
+  private final ConsumerConfig<K, V> consumerConfig;
+
+  @Override
   public void consume(
       Consumer<K, V> consumer,
       ConsumingConfig<K, V> consumingConfig,
@@ -40,6 +47,11 @@ public class BatchConsumer<K, V> {
           .getBatchCallback()
           .accept(consumer, records, null);
     });
+  }
+
+  @Override
+  Consumer<K, V> consumer() {
+    return this.consumer;
   }
 
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {

@@ -46,22 +46,23 @@ public class StockPriceMDB {
         .submit(() -> {
           while (true){
             producer.send(new ProducerRecord<>(
-                "stock_changed",
+                "stock_client_v2",
                 String.format("stock=PAGS, price=%.2f", Math.random() * 100).getBytes()
             ));
-            TimeUnit.SECONDS.sleep(5);
+            TimeUnit.SECONDS.sleep(3);
           }
         });
 
     final ConsumerFactory<String, byte[]> consumerFactory = new ConsumerFactory<>();
     final ConsumerConfig<String, byte[]> consumerConfig = new ConsumerConfig<String, byte[]>()
-        .setTopics(Collections.singletonList("stock_changed"))
-        .withProp(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(2)
+//        .setTopics(Collections.singletonList("stock_changed"))
+        .setTopics(Collections.singletonList("stock_client_v2"))
+        .prop(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(2)
             .toMillis())
-        .withProp(GROUP_ID_CONFIG, "stock_client")
-        .withProp(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
-        .withProp(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
-        .withProp(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
+        .prop(GROUP_ID_CONFIG, "stock_client")
+        .prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+        .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+        .prop(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
         .setRetryPolicy(RetryPolicy
             .builder()
             .maxTries(1)
