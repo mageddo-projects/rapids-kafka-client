@@ -18,9 +18,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Slf4j
-public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
+public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, AutoCloseable {
 
   private AtomicBoolean started = new AtomicBoolean();
+  private ExecutorService executor;
 
   protected abstract void consume(ConsumerRecords<K, V> records);
   protected abstract Consumer<K, V> consumer();
@@ -34,8 +35,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
       return ;
     }
     final Consumer<K, V> consumer = consumer();
-    final ExecutorService executor = Executors.newSingleThreadExecutor();
-
+    this.executor = Executors.newSingleThreadExecutor();
     executor.submit(() -> {
       log.info("status=consumer-starting, partitions-size={}, partitions={}", partitions.size(), partitions);
       consumer.assign(
@@ -99,5 +99,10 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
     } else {
       log.warn("status=no recover callback was specified");
     }
+  }
+
+  @Override
+  public void close() {
+    this.executor.shutdownNow();
   }
 }
