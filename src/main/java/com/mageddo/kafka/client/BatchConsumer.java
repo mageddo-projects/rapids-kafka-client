@@ -47,6 +47,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
           .batchCallback()
           .accept(consumer, records, null);
     });
+    this.consumer.commitSync();
   }
 
   @Override

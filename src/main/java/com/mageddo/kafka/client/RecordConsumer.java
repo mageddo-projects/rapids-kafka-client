@@ -50,6 +50,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
         return;
       }
     }
+    this.consumer.commitSync();
   }
 
   @Override

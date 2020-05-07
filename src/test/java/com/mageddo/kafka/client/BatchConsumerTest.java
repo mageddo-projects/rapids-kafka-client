@@ -3,6 +3,9 @@ package com.mageddo.kafka.client;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.jupiter.api.Test;
@@ -15,11 +18,13 @@ import templates.ConsumerTemplates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Slf4j
 class BatchConsumerTest {
 
   static final String TOPIC = "fruit_topic";
@@ -97,6 +102,32 @@ class BatchConsumerTest {
 
   }
 
+
+  @Test
+  void mustCommitAfterSuccessfullyConsume() {
+    // arrange
+    final AtomicInteger timesRetried = new AtomicInteger();
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+        .recoverCallback((record, lastFailure) -> {
+          fail("Can't recover");
+        })
+        .batchCallback((c, records, error) -> {
+          log.info("consumed: {}", records.count());
+          timesRetried.incrementAndGet();
+        });
+    final DefaultConsumer<String, byte[]> consumer = createConsumer(consumerConfig);
+    final ConsumerRecords<String, byte[]> records = ConsumerRecordsTemplates.build(
+        TOPIC,
+        ConsumerRecordTemplates.build("Hello World".getBytes())
+    );
+
+    // act
+    consumer.consume(records);
+
+    // assert
+    verify(consumer.consumer()).commitSync(any(Map.class));
+    assertEquals(1, timesRetried.get());
+  }
 
   protected DefaultConsumer<String, byte[]> createConsumer(ConsumerConfig<String, byte[]> consumerConfig) {
     return new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
