@@ -34,8 +34,7 @@ class BatchConsumerTest {
 
     // arrange
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
-    consumerConfig
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
         .batchCallback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
         })

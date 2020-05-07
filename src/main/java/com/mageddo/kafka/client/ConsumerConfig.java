@@ -1,6 +1,7 @@
 package com.mageddo.kafka.client;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import lombok.experimental.Accessors;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 
 @Data
-@Builder(toBuilder = true, access = AccessLevel.PRIVATE)
+@Builder(toBuilder = true)
 @Accessors(chain = true, fluent = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -61,5 +62,13 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   public Map<String, Object> props() {
     this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
     return Collections.unmodifiableMap(this.props);
+  }
+
+  public static class ConsumerConfigBuilderx {
+
+    ////    public ConsumerConfigBuilder topics(String ... topics){
+////      this.topics = Arrays.asList(topics);
+////      return this;
+////    }
   }
 }
