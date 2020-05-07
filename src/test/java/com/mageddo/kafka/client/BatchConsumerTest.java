@@ -61,7 +61,7 @@ class BatchConsumerTest {
     consumer.consume(records);
 
     // assert
-    verify(consumer.consumer(), times(3)).commitSync(any(Map.class));
+    verify(consumer.consumer(), times(4)).commitSync(any(Map.class));
     assertTrue(recoverCalled.get());
   }
 
@@ -97,7 +97,7 @@ class BatchConsumerTest {
     consumer.consume(records);
 
     // assert
-    verify(consumer.consumer()).commitSync(any(Map.class));
+    verify(consumer.consumer(), times(2)).commitSync(any(Map.class));
     assertTrue(recoverCalled.get());
 
   }

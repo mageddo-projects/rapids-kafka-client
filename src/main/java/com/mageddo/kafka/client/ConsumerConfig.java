@@ -1,18 +1,20 @@
 package com.mageddo.kafka.client;
 
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.experimental.Accessors;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 
 @Data
 @Builder(toBuilder = true, access = AccessLevel.PRIVATE)
@@ -21,7 +23,6 @@ import java.util.Map;
 @AllArgsConstructor
 public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
 
-  @Getter
   private final Map<String, Object> props = new HashMap<>();
 
   @Builder.Default
@@ -55,5 +56,10 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
 
   public ConsumerConfig<K, V> copy(){
     return this.toBuilder().build();
+  }
+
+  public Map<String, Object> props() {
+    this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
+    return Collections.unmodifiableMap(this.props);
   }
 }
