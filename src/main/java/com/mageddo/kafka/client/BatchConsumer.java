@@ -54,6 +54,11 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
     return this.consumer;
   }
 
+  @Override
+  ConsumerConfig<K, V> consumerConfig() {
+    return this.consumerConfig;
+  }
+
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {
     final ConsumerRecord<K, V> firstRecord = getFirstRecord(records, partition);
     if (firstRecord != null) {

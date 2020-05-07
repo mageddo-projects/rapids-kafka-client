@@ -52,7 +52,7 @@ public class ConsumerFactory<K, V> {
   }
 
   private ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
-    if(consumerConfig.getBatchCallback() == null){
+    if(consumerConfig.getBatchCallback() != null){
       return new BatchConsumer<>(consumer, consumerConfig);
     }
     return new RecordConsumer<>(consumer, consumerConfig);

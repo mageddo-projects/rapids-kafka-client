@@ -60,4 +60,9 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
     return this.consumer;
   }
 
+  @Override
+  ConsumerConfig<K, V> consumerConfig() {
+    return this.consumerConfig;
+  }
+
 }

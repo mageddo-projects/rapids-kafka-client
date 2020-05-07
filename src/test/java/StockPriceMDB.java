@@ -69,7 +69,7 @@ public class StockPriceMDB {
             .delay(Duration.ofSeconds(29))
             .build()
         )
-        .setConsumers(3)
+        .setConsumers(11)
         .setRecoverCallback((record, lastFailure) -> {
           log.info("status=recovering, record={}", new String(record.value()));
         })
