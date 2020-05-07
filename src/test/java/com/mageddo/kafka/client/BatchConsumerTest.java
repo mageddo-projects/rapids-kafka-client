@@ -1,7 +1,10 @@
 package com.mageddo.kafka.client;
 
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import templates.ConsumerConfigTemplates;
@@ -9,21 +12,15 @@ import templates.ConsumerRecordTemplates;
 import templates.ConsumerRecordsTemplates;
 import templates.ConsumerTemplates;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-class RecordConsumerTest {
+class BatchConsumerTest {
 
   static final String TOPIC = "fruit_topic";
 
@@ -34,7 +31,7 @@ class RecordConsumerTest {
     final AtomicBoolean recoverCalled = new AtomicBoolean();
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
-        .callback((c, record, error) -> {
+        .batchCallback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
         })
         .recoverCallback((record, lastFailure) -> {
@@ -70,7 +67,7 @@ class RecordConsumerTest {
     final AtomicBoolean recoverCalled = new AtomicBoolean();
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
-        .callback((c, record, error) -> {
+        .batchCallback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
         })
         .recoverCallback((record, lastFailure) -> {
@@ -100,8 +97,9 @@ class RecordConsumerTest {
 
   }
 
-  protected RecordConsumer<String, byte[]> createConsumer(ConsumerConfig<String, byte[]> consumerConfig) {
-    return new RecordConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
+
+  protected DefaultConsumer<String, byte[]> createConsumer(ConsumerConfig<String, byte[]> consumerConfig) {
+    return new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
   }
 
 }
