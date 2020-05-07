@@ -25,8 +25,8 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
       ConsumerRecords<K, V> records
   );
 
-  abstract Consumer<K, V> consumer();
-  abstract ConsumerConfig<K, V> consumerConfig();
+  protected abstract Consumer<K, V> consumer();
+  protected abstract ConsumerConfig<K, V> consumerConfig();
 
   @Override
   public void start(final List<PartitionInfo> partitions) {

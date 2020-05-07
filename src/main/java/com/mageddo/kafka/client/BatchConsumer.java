@@ -50,12 +50,12 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   }
 
   @Override
-  Consumer<K, V> consumer() {
+  protected Consumer<K, V> consumer() {
     return this.consumer;
   }
 
   @Override
-  ConsumerConfig<K, V> consumerConfig() {
+  protected ConsumerConfig<K, V> consumerConfig() {
     return this.consumerConfig;
   }
 
