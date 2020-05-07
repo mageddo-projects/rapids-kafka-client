@@ -12,12 +12,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 
 @Data
-@Builder(toBuilder = true)
+@Builder(toBuilder = true, buildMethodName = "$build")
 @Accessors(chain = true, fluent = true)
 @NoArgsConstructor
 @AllArgsConstructor
@@ -55,7 +56,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   }
 
   public ConsumerConfig<K, V> copy() {
-    return ConsumerConfigBuilder.class.cast(this.toBuilder()).build();
+    return ConsumerConfigBuilder.class.cast(this.toBuilder())
+        .build();
   }
 
   public Map<String, Object> props() {
@@ -65,6 +67,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
 
   public static class ConsumerConfigBuilder<K, V> {
 
+    private Map<String, Object> props = new HashMap<>();
+
     public ConsumerConfigBuilder<K, V> topics(String... topics) {
       this.topics = Arrays.asList(topics);
       return this;
@@ -73,6 +77,17 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     public ConsumerConfigBuilder<K, V> topics(Collection<String> topics) {
       this.topics = topics;
       return this;
+    }
+
+    public ConsumerConfigBuilder<K, V> prop(String key, Object value) {
+      this.props.put(key, value);
+      return this;
+    }
+
+    public ConsumerConfig<K, V> build() {
+      final ConsumerConfig<K, V> config = $build();
+      this.props.forEach(config::prop);
+      return config;
     }
   }
 }

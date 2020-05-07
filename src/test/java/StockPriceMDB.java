@@ -1,6 +1,4 @@
-
 import java.time.Duration;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -18,10 +16,9 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import lombok.extern.slf4j.Slf4j;
-
-import org.apache.kafka.common.serialization.StringSerializer;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
@@ -54,21 +51,20 @@ public class StockPriceMDB {
         });
 
     final ConsumerFactory<String, byte[]> consumerFactory = new ConsumerFactory<>();
-    final ConsumerConfig<String, byte[]> consumerConfig = new ConsumerConfig<String, byte[]>()
-        .topics(Collections.singletonList("stock_client_v2"))
-        .prop(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(2)
-            .toMillis())
-        .prop(GROUP_ID_CONFIG, "stock_client")
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfig.<String, byte[]>builder()
         .prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
         .prop(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
+        .prop(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(2).toMillis())
+        .topics("stock_client_v2")
+        .prop(GROUP_ID_CONFIG, "stock_client")
+        .consumers(11)
         .retryPolicy(RetryPolicy
             .builder()
             .maxTries(1)
             .delay(Duration.ofSeconds(29))
             .build()
         )
-        .consumers(11)
         .recoverCallback((record, lastFailure) -> {
           log.info("status=recovering, record={}", new String(record.value()));
         })
@@ -80,7 +76,8 @@ public class StockPriceMDB {
 //            }
             log.info("key={}, value={}", record.key(), new String(record.value()));
           }
-        });
+        })
+        .build();
 
     consumerFactory.consume(consumerConfig);
     log.info("waiting termination....");
