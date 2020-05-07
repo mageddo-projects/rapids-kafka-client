@@ -19,12 +19,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
 
   private AtomicBoolean started = new AtomicBoolean();
 
-  public abstract void consume(
-      Consumer<K, V> consumer,
-      ConsumingConfig<K, V> consumingConfig,
-      ConsumerRecords<K, V> records
-  );
-
+  protected abstract void consume(ConsumerRecords<K, V> records);
   protected abstract Consumer<K, V> consumer();
   protected abstract ConsumerConfig<K, V> consumerConfig();
 
@@ -61,7 +56,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
         if (log.isTraceEnabled()) {
           log.trace("status=polled, records={}", records.count());
         }
-        this.consume(consumer, consumingConfig, records);
+        this.consume(records);
       } catch (Exception e) {
         log.warn("status=consuming-error", e);
         if (batchConsuming) {

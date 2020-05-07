@@ -18,33 +18,30 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
   private final ConsumerConfig<K,V> consumerConfig;
 
   @Override
-  public void consume(
-      Consumer<K, V> consumer,
-      ConsumingConfig<K, V> consumingConfig,
-      ConsumerRecords<K, V> records
-  ) {
+  protected void consume(ConsumerRecords<K, V> records) {
 
     for (final ConsumerRecord<K, V> record : records) {
       final AtomicBoolean recovered = new AtomicBoolean();
       Retrier
           .builder()
+          .retryPolicy(this.consumerConfig.retryPolicy())
           .onExhausted((lastFailure) -> {
             log.info("exhausted tries");
-            Consumers.doRecoverWhenAvailable(consumer, consumingConfig, record, lastFailure);
+            Consumers.doRecoverWhenAvailable(this.consumer, this.consumerConfig, record, lastFailure);
             recovered.set(true);
           })
           .onRetry(() -> {
             log.info("failed to consume");
-            Consumers.commitSyncRecord(consumer, record);
+            Consumers.commitSyncRecord(this.consumer, record);
           })
           .build()
           .run(() -> {
             if (log.isTraceEnabled()) {
               log.info("status=consuming, record={}", record);
             }
-            consumingConfig
+            this.consumerConfig
                 .callback()
-                .accept(consumer, record, null);
+                .accept(this.consumer, record, null);
           });
       if (recovered.get()) {
         // pare o consumo para fazer poll imediatamente

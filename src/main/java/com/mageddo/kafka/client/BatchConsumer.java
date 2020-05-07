@@ -2,13 +2,12 @@ package com.mageddo.kafka.client;
 
 import java.util.List;
 
-import lombok.RequiredArgsConstructor;
-
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -19,14 +18,10 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   private final ConsumerConfig<K, V> consumerConfig;
 
   @Override
-  public void consume(
-      Consumer<K, V> consumer,
-      ConsumingConfig<K, V> consumingConfig,
-      ConsumerRecords<K, V> records
-  ) {
+  protected void consume(ConsumerRecords<K, V> records) {
     final Retrier retrier = Retrier
         .builder()
-        .retryPolicy(consumingConfig.retryPolicy())
+        .retryPolicy(this.consumerConfig.retryPolicy())
         .onRetry(() -> {
           log.info("failed to consume");
           for (final TopicPartition partition : records.partitions()) {
@@ -35,7 +30,12 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
         })
         .onExhausted((lastFailure) -> {
           log.info("status=exhausted-tries, records={}", records.count());
-          records.forEach(record -> Consumers.doRecoverWhenAvailable(consumer, consumingConfig, record, lastFailure));
+          records.forEach(record -> Consumers.doRecoverWhenAvailable(
+              this.consumer,
+              this.consumerConfig,
+              record,
+              lastFailure
+          ));
         })
         .build();
 
@@ -43,7 +43,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
       if (log.isTraceEnabled()) {
         log.trace("status=consuming, records={}", records);
       }
-      consumingConfig
+      this.consumerConfig
           .batchCallback()
           .accept(consumer, records, null);
     });
