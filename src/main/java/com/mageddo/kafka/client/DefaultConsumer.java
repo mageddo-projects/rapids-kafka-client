@@ -25,6 +25,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
   protected abstract void consume(ConsumerRecords<K, V> records);
   protected abstract Consumer<K, V> consumer();
   protected abstract ConsumerConfig<K, V> consumerConfig();
+  protected abstract void onErrorCallback(Exception e);
 
   @Override
   public void start(final List<PartitionInfo> partitions) {
@@ -52,7 +53,6 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
     if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
       throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
     }
-    final boolean batchConsuming = consumingConfig.batchCallback() != null;
     while (true) {
       try {
         final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.timeout());
@@ -62,15 +62,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
         this.consume(records);
       } catch (Exception e) {
         log.warn("status=consuming-error", e);
-        if (batchConsuming) {
-          consumingConfig
-              .batchCallback()
-              .accept(consumer, null, e);
-        } else {
-          consumingConfig
-              .callback()
-              .accept(consumer, null, e);
-        }
+        this.onErrorCallback(e);
       }
       try {
         TimeUnit.MILLISECONDS.sleep(
@@ -86,6 +78,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V> {
       }
     }
   }
+
 
   void commitSyncRecord(Consumer<K, V> consumer, ConsumerRecord<K, V> record) {
     consumer.commitSync(Collections.singletonMap(

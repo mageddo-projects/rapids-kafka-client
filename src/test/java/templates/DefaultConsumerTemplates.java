@@ -22,6 +22,11 @@ public class DefaultConsumerTemplates {
     protected ConsumerConfig<K, V> consumerConfig() {
       return null;
     }
+
+    @Override
+    protected void onErrorCallback(Exception e) {
+
+    }
   }
   public static<K, V> DefaultConsumer<K, V> build() {
     return new MockedDefaultConsumer<>();

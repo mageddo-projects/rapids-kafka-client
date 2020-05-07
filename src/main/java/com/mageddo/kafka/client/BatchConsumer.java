@@ -60,6 +60,13 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
     return this.consumerConfig;
   }
 
+  @Override
+  protected void onErrorCallback(Exception e) {
+    this.consumerConfig
+        .batchCallback()
+        .accept(this.consumer, null, e);
+  }
+
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {
     final ConsumerRecord<K, V> firstRecord = getFirstRecord(records, partition);
     if (firstRecord != null) {

@@ -63,4 +63,11 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
     return this.consumerConfig;
   }
 
+  @Override
+  protected void onErrorCallback(Exception e) {
+    this.consumerConfig
+        .callback()
+        .accept(this.consumer, null, e);
+  }
+
 }
