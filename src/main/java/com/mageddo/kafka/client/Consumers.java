@@ -1,37 +1,49 @@
 package com.mageddo.kafka.client;
 
-import java.util.Collections;
-
-import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.TopicPartition;
-
 import lombok.experimental.UtilityClass;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @UtilityClass
 public class Consumers {
 
-  public static <K, V> void commitSyncRecord(Consumer<K, V> consumer, ConsumerRecord<K, V> record) {
-    consumer.commitSync(Collections.singletonMap(
-        new TopicPartition(record.topic(), record.partition()),
-        new OffsetAndMetadata(record.offset())
-    ));
+  public static <K, V> void consume(
+      ConsumerConfig<K, V> consumerConfig,
+      ConsumeCallback<K, V> consumeCallback
+  ) {
+    consume(consumerConfig, consumeCallback, null);
   }
 
-  public static <K, V> void doRecoverWhenAvailable(
-      Consumer<K, V> consumer,
-      ConsumingConfig<K, V> consumingConfig,
-      ConsumerRecord<K, V> record,
-      Throwable lastFailure
+  public static <K, V> void consume(
+      ConsumerConfig<K, V> consumerConfig,
+      ConsumeCallback<K, V> consumeCallback,
+      RecoverCallback<K, V> recoverCallback
   ) {
-    if (consumingConfig.recoverCallback() != null) {
-      consumingConfig.recoverCallback().recover(record, lastFailure);
-      commitSyncRecord(consumer, record);
-    } else {
-      log.warn("status=no recover callback was specified");
-    }
+    final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
+    consumerFactory.consume(
+        consumerConfig
+            .copy()
+            .callback(consumeCallback)
+            .recoverCallback(recoverCallback)
+    );
+  }
+
+  public static <K, V> void consume(
+      ConsumerConfig<K, V> consumerConfig,
+      BatchConsumeCallback<K, V> batchConsumeCallback
+  ) {
+    consume(consumerConfig, batchConsumeCallback, null);
+  }
+
+  public static <K, V> void consume(
+      ConsumerConfig<K, V> consumerConfig,
+      BatchConsumeCallback<K, V> batchConsumeCallback,
+      RecoverCallback<K, V> recoverCallback
+  ) {
+    final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
+    consumerFactory.consume(
+        consumerConfig
+            .copy()
+            .batchCallback(batchConsumeCallback)
+            .recoverCallback(recoverCallback)
+    );
   }
 }

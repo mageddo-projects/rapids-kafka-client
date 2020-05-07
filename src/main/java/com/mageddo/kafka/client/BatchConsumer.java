@@ -30,7 +30,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
         })
         .onExhausted((lastFailure) -> {
           log.info("status=exhausted-tries, records={}", records.count());
-          records.forEach(record -> Consumers.doRecoverWhenAvailable(
+          records.forEach(record -> doRecoverWhenAvailable(
               this.consumer,
               this.consumerConfig,
               record,
@@ -63,7 +63,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {
     final ConsumerRecord<K, V> firstRecord = getFirstRecord(records, partition);
     if (firstRecord != null) {
-      Consumers.commitSyncRecord(consumer, firstRecord);
+      commitSyncRecord(consumer, firstRecord);
     }
   }
 

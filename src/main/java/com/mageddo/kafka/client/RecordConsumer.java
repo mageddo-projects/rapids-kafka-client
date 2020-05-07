@@ -27,12 +27,12 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
           .retryPolicy(this.consumerConfig.retryPolicy())
           .onExhausted((lastFailure) -> {
             log.info("exhausted tries");
-            Consumers.doRecoverWhenAvailable(this.consumer, this.consumerConfig, record, lastFailure);
+            doRecoverWhenAvailable(this.consumer, this.consumerConfig, record, lastFailure);
             recovered.set(true);
           })
           .onRetry(() -> {
             log.info("failed to consume");
-            Consumers.commitSyncRecord(this.consumer, record);
+            commitSyncRecord(this.consumer, record);
           })
           .build()
           .run(() -> {
