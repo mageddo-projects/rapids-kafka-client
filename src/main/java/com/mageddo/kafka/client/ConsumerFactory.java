@@ -17,7 +17,10 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 @Slf4j
-public class ConsumerFactory<K, V> {
+public class ConsumerFactory<K, V> implements AutoCloseable {
+
+  private List<ThreadConsumer<K, V>> consumers = new ArrayList<>();
+  private boolean closed;
 
   public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
     return config -> new KafkaConsumer<>(config.props());
@@ -69,9 +72,14 @@ public class ConsumerFactory<K, V> {
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
     if (consumerConfig.batchCallback() != null) {
-      return new BatchConsumer<>(consumer, consumerConfig);
+      return bindInstance(new BatchConsumer<>(consumer, consumerConfig));
     }
-    return new RecordConsumer<>(consumer, consumerConfig);
+    return bindInstance(new RecordConsumer<>(consumer, consumerConfig));
+  }
+
+  private ThreadConsumer<K, V> bindInstance(ThreadConsumer<K, V> consumer) {
+    this.consumers.add(consumer);
+    return consumer;
   }
 
   private List<PartitionInfo> popConsumerPartitions(Deque<PartitionInfo> stack, int quantity) {
@@ -126,5 +134,16 @@ public class ConsumerFactory<K, V> {
         retryPolicy.getMaxTries(),
         retryPolicy.getDelay()
     );
+  }
+
+  @Override
+  public void close() throws Exception {
+    if(closed){
+      return ;
+    }
+    for (ThreadConsumer<K, V> consumer : this.consumers) {
+      consumer.close();
+    }
+    this.closed = true;
   }
 }

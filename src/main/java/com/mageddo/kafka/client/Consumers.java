@@ -8,19 +8,20 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Consumers {
 
-  public static <K, V> void consume(ConsumerConfig<K, V> consumerConfig) {
+  public static <K, V> ConsumerFactory<K, V> consume(ConsumerConfig<K, V> consumerConfig) {
     final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
     consumerFactory.consume(consumerConfig);
+    return consumerFactory;
   }
 
-  public static <K, V> void consume(
+  public static <K, V> ConsumerFactory<K, V> consume(
       ConsumerConfig<K, V> consumerConfig,
       ConsumeCallback<K, V> consumeCallback
   ) {
-    consume(consumerConfig, consumeCallback, null);
+    return consume(consumerConfig, consumeCallback, null);
   }
 
-  public static <K, V> void consume(
+  public static <K, V> ConsumerFactory<K, V> consume(
       ConsumerConfig<K, V> consumerConfig,
       ConsumeCallback<K, V> consumeCallback,
       RecoverCallback<K, V> recoverCallback
@@ -33,9 +34,10 @@ public class Consumers {
             .recoverCallback(recoverCallback)
             .build()
     );
+    return consumerFactory;
   }
 
-  public static <K, V> void consume(
+  public static <K, V> ConsumerFactory<K, V> consume(
       ConsumerConfig<K, V> consumerConfig,
       String topic,
       ConsumeCallback<K, V> consumeCallback,
@@ -50,16 +52,17 @@ public class Consumers {
             .recoverCallback(recoverCallback)
             .build()
     );
+    return consumerFactory;
   }
 
-  public static <K, V> void batchConsume(
+  public static <K, V> ConsumerFactory<K, V> batchConsume(
       ConsumerConfig<K, V> consumerConfig,
       BatchConsumeCallback<K, V> batchConsumeCallback
   ) {
-    batchConsume(consumerConfig, batchConsumeCallback, null);
+    return batchConsume(consumerConfig, batchConsumeCallback, null);
   }
 
-  public static <K, V> void batchConsume(
+  public static <K, V> ConsumerFactory<K, V> batchConsume(
       ConsumerConfig<K, V> consumerConfig,
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback
@@ -72,9 +75,10 @@ public class Consumers {
             .recoverCallback(recoverCallback)
             .build()
     );
+    return consumerFactory;
   }
 
-  public static <K, V> void batchConsume(
+  public static <K, V> ConsumerFactory<K, V> batchConsume(
       ConsumerConfig<K, V> consumerConfig,
       String topic,
       BatchConsumeCallback<K, V> batchConsumeCallback,
@@ -89,6 +93,7 @@ public class Consumers {
             .recoverCallback(recoverCallback)
             .build()
     );
+    return consumerFactory;
   }
 
   /**
