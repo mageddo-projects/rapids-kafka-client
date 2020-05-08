@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -53,7 +54,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
       throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
     }
-    while (true) {
+    while (!Thread.currentThread().isInterrupted()) {
       try {
         final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.pollTimeout());
         if (log.isTraceEnabled()) {
@@ -64,18 +65,22 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
         log.warn("status=consuming-error", e);
         this.onErrorCallback(e);
       }
-      try {
-        TimeUnit.MILLISECONDS.sleep(
-            consumingConfig
-                .pollInterval()
-                .toMillis()
-        );
-      } catch (InterruptedException e) {
-        Thread
-            .currentThread()
-            .interrupt();
-        break;
+      if(!Duration.ZERO.equals(consumingConfig.pollInterval())){
+        sleep(consumingConfig.pollInterval());
       }
+    }
+  }
+
+  /**
+   * Sleep for some duration
+   */
+  protected void sleep(Duration timeout) {
+    try {
+      TimeUnit.MILLISECONDS.sleep(timeout.toMillis());
+    } catch (InterruptedException e) {
+      Thread
+          .currentThread()
+          .interrupt();
     }
   }
 

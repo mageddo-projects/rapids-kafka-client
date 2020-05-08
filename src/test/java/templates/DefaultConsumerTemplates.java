@@ -3,19 +3,35 @@ package templates;
 import com.mageddo.kafka.client.ConsumerConfig;
 import com.mageddo.kafka.client.DefaultConsumer;
 
-import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.apache.kafka.clients.consumer.MockConsumer;
+import org.apache.kafka.clients.consumer.OffsetResetStrategy;
+import org.apache.kafka.common.PartitionInfo;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DefaultConsumerTemplates {
-  static class MockedDefaultConsumer<K, V> extends DefaultConsumer<K, V> {
+  public static class MockedDefaultConsumer<K, V> extends DefaultConsumer<K, V> {
+
+    private MockConsumer<K, V> consumer = new MockConsumer<>(OffsetResetStrategy.LATEST);
+
+    public MockedDefaultConsumer() {
+    }
+
+    public MockedDefaultConsumer(String topic, List<PartitionInfo> partitionsInfo) {
+      this.consumer().updatePartitions(topic, partitionsInfo);
+      this.consumer().scheduleNopPollTask();
+    }
+
     @Override
     public void consume(
         ConsumerRecords<K, V> records) {
     }
 
     @Override
-    protected Consumer<K, V> consumer() {
-      return null;
+    public MockConsumer<K, V> consumer() {
+      return this.consumer;
     }
 
     @Override
@@ -28,7 +44,12 @@ public class DefaultConsumerTemplates {
 
     }
   }
-  public static<K, V> DefaultConsumer<K, V> build() {
+
+  public static <K, V> MockedDefaultConsumer<K, V> build() {
     return new MockedDefaultConsumer<>();
+  }
+
+  public static <K, V> MockedDefaultConsumer<K, V> build(String topic, PartitionInfo ... partitions) {
+    return new MockedDefaultConsumer<>(topic, Arrays.asList(partitions));
   }
 }

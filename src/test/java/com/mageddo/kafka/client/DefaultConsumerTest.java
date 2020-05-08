@@ -1,5 +1,6 @@
 package com.mageddo.kafka.client;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -8,35 +9,40 @@ import java.util.concurrent.TimeUnit;
 
 import lombok.SneakyThrows;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.common.PartitionInfo;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import templates.ConsumerConfigTemplates;
+import templates.ConsumerRecordTemplates;
 import templates.ConsumerTemplates;
 import templates.DefaultConsumerTemplates;
+import templates.DefaultConsumerTemplates.MockedDefaultConsumer;
 import templates.PartitionInfoTemplates;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 class DefaultConsumerTest {
 
-  private DefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build());
 
   @Test
   void cantStartTwitch() {
 
     // arrange
+    final DefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build());
 
     // act
-    this.consumer.start(Collections.EMPTY_LIST);
-    this.consumer.start(Collections.EMPTY_LIST);
+    consumer.start(Collections.EMPTY_LIST);
+    consumer.start(Collections.EMPTY_LIST);
 
     // assert
-    verify(this.consumer).consumer();
+    verify(consumer).consumer();
 
   }
 
@@ -46,14 +52,15 @@ class DefaultConsumerTest {
 
     // arrange
     final String topic = "fruit_topic";
-    final List<PartitionInfo> partitionInfos = Collections.singletonList(PartitionInfoTemplates.build(topic));
-    final MockConsumer<String, byte[]> consumer = ConsumerTemplates.build(topic, partitionInfos);
-    consumer.scheduleNopPollTask();
+    final MockedDefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build(
+        topic,
+        PartitionInfoTemplates.build(topic)
+    ));
 
     // act
     final ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.submit(() -> {
-      this.consumer.poll(consumer, ConsumerConfigTemplates.build());
+      consumer.poll(consumer.consumer(), ConsumerConfigTemplates.build());
     });
 
     // assert
@@ -61,5 +68,31 @@ class DefaultConsumerTest {
     executor.awaitTermination(5, TimeUnit.SECONDS);
     assertTrue(executor.isShutdown());
     assertTrue(executor.isTerminated());
+  }
+
+  @Test
+  void mustNotSleepWhenPollIntervalIsSetToZero() throws InterruptedException {
+    // arrange
+//    final ConsumerRecord<String, String> consumerRecord = ConsumerRecordTemplates.build("hello world!!");
+    final String topic = "fruit_topic";
+    final MockedDefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build(
+        topic,
+        PartitionInfoTemplates.build(topic)
+    ));
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+        .<String, byte[]>builder()
+        .pollInterval(Duration.ZERO)
+        .build();
+    final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    // act
+    executor.submit(() -> {
+      consumer.poll(consumer.consumer(), consumerConfig);
+    });
+    executor.awaitTermination(100, TimeUnit.MILLISECONDS);
+    executor.shutdownNow();
+
+    // assert
+    verify(consumer, never()).sleep(any());
   }
 }
