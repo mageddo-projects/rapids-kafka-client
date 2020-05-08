@@ -35,7 +35,7 @@ class BatchConsumerTest {
     final AtomicBoolean recoverCalled = new AtomicBoolean();
     final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
         .toBuilder()
-        .batchCallback((c, record, error) -> {
+        .batchCallback((ctx, record) -> {
           throw new RuntimeException("Failed consuming");
         })
         .recoverCallback((record, lastFailure) -> {
@@ -72,7 +72,7 @@ class BatchConsumerTest {
     final AtomicBoolean recoverCalled = new AtomicBoolean();
     final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
-        .batchCallback((c, record, error) -> {
+        .batchCallback((ctx, record) -> {
           throw new RuntimeException("Failed consuming");
         })
         .recoverCallback((record, lastFailure) -> {
@@ -113,7 +113,7 @@ class BatchConsumerTest {
         .recoverCallback((record, lastFailure) -> {
           fail("Can't recover");
         })
-        .batchCallback((c, records, error) -> {
+        .batchCallback((ctx, records) -> {
           log.info("consumed: {}", records.count());
           timesRetried.incrementAndGet();
         })

@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
-  private final Consumers<K,V> consumerConfig;
+  private final Consumers<K, V> consumers;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
@@ -23,10 +23,10 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
       final AtomicBoolean recovered = new AtomicBoolean();
       Retrier
           .builder()
-          .retryPolicy(this.consumerConfig.retryPolicy())
+          .retryPolicy(this.consumers.retryPolicy())
           .onExhausted((lastFailure) -> {
             log.info("exhausted tries");
-            doRecoverWhenAvailable(this.consumer, this.consumerConfig, record, lastFailure);
+            doRecoverWhenAvailable(this.consumer, this.consumers, record, lastFailure);
             recovered.set(true);
           })
           .onRetry(() -> {
@@ -39,9 +39,17 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
               log.info("status=consuming, record={}", record);
             }
             try {
-              this.consumerConfig
+              this.consumers
                   .callback()
-                  .accept(this.consumer, record, null);
+                  .accept(
+                      DefaultContext
+                          .<K, V>builder()
+                          .consumer(this.consumer)
+                          .records(records)
+                          .record(record)
+                          .build(),
+                      record
+                  );
             } catch (Exception e) {
               Exceptions.throwException(e);
             }
@@ -63,18 +71,6 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
 
   @Override
   protected Consumers<K, V> consumerConfig() {
-    return this.consumerConfig;
+    return this.consumers;
   }
-
-  @Override
-  protected void onErrorCallback(Exception e) {
-    try {
-      this.consumerConfig
-          .callback()
-          .accept(this.consumer, null, e);
-    } catch (Exception ex) {
-      Exceptions.throwException(e);
-    }
-  }
-
 }

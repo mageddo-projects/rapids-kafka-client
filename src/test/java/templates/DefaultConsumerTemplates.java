@@ -39,10 +39,6 @@ public class DefaultConsumerTemplates {
       return null;
     }
 
-    @Override
-    protected void onErrorCallback(Exception e) {
-
-    }
   }
 
   public static <K, V> MockedDefaultConsumer<K, V> build() {

@@ -17,8 +17,8 @@ public class ConsumerConfigTemplates {
 
   public static <K, V> Consumers.ConsumersBuilder<K, V> builder() {
     return Consumers.<K, V>builder()
-        .batchCallback((consumer, records, error) -> System.out.println("batch callback"))
-        .callback((consumer, record, error) -> System.out.println("callback"))
+        .batchCallback((ctx, records) -> System.out.println("batch callback"))
+        .callback((ctx, record) -> System.out.println("callback"))
         .consumers(3)
         .pollInterval(Duration.ofMillis(1000 / 3))
         .retryPolicy(RetryPolicy

@@ -40,7 +40,7 @@ public class Ex01 {
         .recoverCallback((record, lastFailure) -> {
           log.info("status=recovering, record={}", new String(record.value()));
         })
-        .batchCallback((consumer, records, e) -> {
+        .batchCallback((ctx, records) -> {
           for (final ConsumerRecord<String, byte[]> record : records) {
             final double randomValue = Math.random();
 //            if(randomValue > 0.5 && randomValue < 0.8){

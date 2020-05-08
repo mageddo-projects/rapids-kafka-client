@@ -7,7 +7,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
 
-import lombok.Lombok;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -47,7 +46,13 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
       try {
         this.consumerConfig
             .batchCallback()
-            .accept(consumer, records, null);
+            .accept(
+                DefaultContext
+                    .<K, V>builder()
+                    .records(records)
+                    .build(),
+                records
+            );
       } catch (Exception e) {
         Exceptions.throwException(e);
       }
@@ -63,17 +68,6 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   @Override
   protected Consumers<K, V> consumerConfig() {
     return this.consumerConfig;
-  }
-
-  @Override
-  protected void onErrorCallback(Exception e) {
-    try {
-      this.consumerConfig
-          .batchCallback()
-          .accept(this.consumer, null, e);
-    } catch (Exception ex) {
-      Lombok.sneakyThrow(ex);
-    }
   }
 
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {
