@@ -77,6 +77,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
       this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
       this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
       this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+      this.topics = Collections.EMPTY_LIST;
     }
 
     public ConsumerConfigBuilder<K, V> topics(String... topics) {
