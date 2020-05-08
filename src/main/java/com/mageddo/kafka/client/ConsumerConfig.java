@@ -114,7 +114,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   }
 
   public ConsumerFactory<K, V> consume(ConsumeCallback<K, V> consumeCallback) {
-    return consume(consumeCallback, null);
+    return this.consume(consumeCallback, null);
   }
 
   public ConsumerFactory<K, V> consume(ConsumeCallback<K, V> consumeCallback, RecoverCallback<K, V> recoverCallback) {
@@ -141,10 +141,10 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   }
 
   public ConsumerFactory<K, V> consume(BatchConsumeCallback<K, V> batchConsumeCallback) {
-    return batchConsume(batchConsumeCallback, null);
+    return this.consume(batchConsumeCallback, null);
   }
 
-  public ConsumerFactory<K, V> batchConsume(
+  public ConsumerFactory<K, V> consume(
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback
   ) {
@@ -156,7 +156,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     );
   }
 
-  public ConsumerFactory<K, V> batchConsume(
+  public ConsumerFactory<K, V> consume(
       String topic,
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback

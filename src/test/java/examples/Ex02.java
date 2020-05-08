@@ -35,7 +35,7 @@ public class Ex02 {
             .build()
         )
         .build()
-        .batchConsume((consumer, records, e) -> {
+        .consume((consumer, records, e) -> {
               for (final ConsumerRecord<String, byte[]> record : records) {
                 log.info("key={}, value={}", record.key(), new String(record.value()));
               }
