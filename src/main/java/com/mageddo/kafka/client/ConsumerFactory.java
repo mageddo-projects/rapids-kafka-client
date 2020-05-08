@@ -42,7 +42,7 @@ public class ConsumerFactory<K, V> {
     }
     final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, Integer.MAX_VALUE);
     if(consumerPartitions.isEmpty()){
-      log.info("status=no-consumerPartitions-left-for-first-consumer, this is not supposed to happen");
+      log.debug("status=no-consumer-partitions-left-for-first-consumer");
       return ;
     }
     final ThreadConsumer<K, V> threadConsumer = getInstance(firstConsumer, consumerConfig);
