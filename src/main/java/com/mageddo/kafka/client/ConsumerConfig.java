@@ -24,28 +24,58 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 @AllArgsConstructor
 public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
 
+  /**
+   * @see ConsumerCreateConfig#props()
+   */
   private Map<String, Object> props;
 
+  /**
+   * @see ConsumerCreateConfig#consumers()
+   */
   private int consumers;
 
+  /**
+   * @see ConsumerCreateConfig#topics()
+   */
   @NonNull
   private Collection<String> topics;
 
+  /**
+   * @see ConsumingConfig#pollTimeout()
+   */
   @NonNull
   private Duration pollTimeout;
 
+  /**
+   * @see ConsumingConfig#pollInterval()
+   */
   @NonNull
   private Duration pollInterval;
 
+  /**
+   * @see ConsumingConfig#retryPolicy()
+   */
   @NonNull
   private RetryPolicy retryPolicy;
 
+  /**
+   * @see ConsumingConfig#recoverCallback() )
+   */
   private RecoverCallback<K, V> recoverCallback;
 
+  /**
+   * @see ConsumingConfig#callback()
+   */
   private ConsumeCallback<K, V> callback;
 
+  /**
+   * @see ConsumingConfig#batchCallback()
+   */
   private BatchConsumeCallback<K, V> batchCallback;
 
+  /**
+   * @see ConsumerCreateConfig#consumerSupplier()
+   */
   private ConsumerSupplier<K, V> consumerSupplier;
 
   public ConsumerConfig<K, V> prop(String k, Object v) {
