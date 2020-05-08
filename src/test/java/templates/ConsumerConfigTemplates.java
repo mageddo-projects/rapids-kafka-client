@@ -20,7 +20,7 @@ public class ConsumerConfigTemplates {
         .batchCallback((consumer, records, error) -> System.out.println("batch callback"))
         .callback((consumer, record, error) -> System.out.println("callback"))
         .consumers(3)
-        .interval(Duration.ofMillis(1000 / 3))
+        .pollInterval(Duration.ofMillis(1000 / 3))
         .retryPolicy(RetryPolicy
             .builder()
             .maxTries(2)
@@ -29,7 +29,7 @@ public class ConsumerConfigTemplates {
         )
         .recoverCallback((record, lastFailure) -> System.out.println("recover callback"))
         .topics(Collections.singleton("fruit_topic"))
-        .timeout(Duration.ofMillis(100))
+        .pollTimeout(Duration.ofMillis(100))
         ;
   }
 

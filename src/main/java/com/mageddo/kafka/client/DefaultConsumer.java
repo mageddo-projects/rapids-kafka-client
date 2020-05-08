@@ -55,7 +55,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     }
     while (true) {
       try {
-        final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.timeout());
+        final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.pollTimeout());
         if (log.isTraceEnabled()) {
           log.trace("status=polled, records={}", records.count());
         }
@@ -67,7 +67,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
       try {
         TimeUnit.MILLISECONDS.sleep(
             consumingConfig
-                .interval()
+                .pollInterval()
                 .toMillis()
         );
       } catch (InterruptedException e) {

@@ -22,12 +22,12 @@ public interface ConsumingConfig<K, V> {
   /**
    * How long to wait the poll call
    */
-  Duration timeout();
+  Duration pollTimeout();
 
   /**
    * The interval between poll calls
    */
-  Duration interval();
+  Duration pollInterval();
 
   /**
    * How to make retries when consume callback causes exceptions

@@ -4,11 +4,9 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,10 +30,10 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   private Collection<String> topics;
 
   @NonNull
-  private Duration timeout;
+  private Duration pollTimeout;
 
   @NonNull
-  private Duration interval;
+  private Duration pollInterval;
 
   @NonNull
   private RetryPolicy retryPolicy;
@@ -61,8 +59,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return new ConsumerConfigBuilder<K, V>()
         .consumers(this.consumers)
         .topics(this.topics)
-        .timeout(this.timeout)
-        .interval(this.interval)
+        .pollTimeout(this.pollTimeout)
+        .pollInterval(this.pollInterval)
         .retryPolicy(this.retryPolicy)
         .recoverCallback(this.recoverCallback)
         .callback(this.callback)
@@ -76,8 +74,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     public ConsumerConfigBuilder() {
       this.props = new LinkedHashMap<>();
       this.consumers = 1;
-      this.timeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
-      this.interval = DefaultConsumingConfig.FPS_30_DURATION;
+      this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
+      this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
       this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
     }
 
@@ -101,8 +99,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
           this.props,
           this.consumers,
           this.topics,
-          this.timeout,
-          this.interval,
+          this.pollTimeout,
+          this.pollInterval,
           this.retryPolicy,
           this.recoverCallback,
           this.callback,

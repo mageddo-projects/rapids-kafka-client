@@ -22,11 +22,11 @@ public class DefaultConsumingConfig<K, V> implements ConsumingConfig<K, V> {
 
   @NonNull
   @Builder.Default
-  private Duration timeout = DEFAULT_POLL_TIMEOUT;
+  private Duration pollTimeout = DEFAULT_POLL_TIMEOUT;
 
   @NonNull
   @Builder.Default
-  private Duration interval = FPS_30_DURATION;
+  private Duration pollInterval = FPS_30_DURATION;
 
   @NonNull
   @Builder.Default
