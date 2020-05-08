@@ -86,15 +86,10 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     ));
   }
 
-  void doRecoverWhenAvailable(
-      Consumer<K, V> consumer,
-      ConsumingConfig<K, V> consumingConfig,
-      ConsumerRecord<K, V> record,
-      Throwable lastFailure
-  ) {
-    if (consumingConfig.recoverCallback() != null) {
-      consumingConfig.recoverCallback().recover(record, lastFailure);
-      commitSyncRecord(consumer, record);
+  void doRecoverWhenAvailable(RecoverContext<K, V> ctx, RecoverCallback<K, V> recoverCallback) {
+    if (recoverCallback != null) {
+      recoverCallback.recover(ctx);
+      commitSyncRecord(ctx.consumer(), ctx.record());
     } else {
       log.warn("status=no recover callback was specified");
     }

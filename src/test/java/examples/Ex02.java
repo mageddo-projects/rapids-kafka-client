@@ -40,8 +40,8 @@ public class Ex02 {
                 log.info("key={}, value={}", record.key(), new String(record.value()));
               }
             },
-            (record, lastFailure) -> {
-              log.info("status=recovering, record={}", new String(record.value()));
+            (ctx) -> {
+              log.info("status=recovering, record={}", new String(ctx.record().value()));
             }
         )
         .waitFor();

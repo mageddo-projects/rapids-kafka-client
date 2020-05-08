@@ -26,7 +26,16 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
           .retryPolicy(this.consumers.retryPolicy())
           .onExhausted((lastFailure) -> {
             log.info("exhausted tries");
-            doRecoverWhenAvailable(this.consumer, this.consumers, record, lastFailure);
+            this.doRecoverWhenAvailable(
+                DefaultRecoverContext
+                    .<K, V>builder()
+                    .consumer(this.consumer)
+                    .lastFailure(lastFailure)
+                    .record(record)
+                    .build()
+                ,
+                this.consumers.recoverCallback()
+            );
             recovered.set(true);
           })
           .onRetry(() -> {

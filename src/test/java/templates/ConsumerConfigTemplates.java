@@ -27,7 +27,7 @@ public class ConsumerConfigTemplates {
             .delay(Duration.ofMinutes(1))
             .build()
         )
-        .recoverCallback((record, lastFailure) -> System.out.println("recover callback"))
+        .recoverCallback((ctx) -> System.out.println("recover callback"))
         .topics(Collections.singleton("fruit_topic"))
         .pollTimeout(Duration.ofMillis(100))
         ;

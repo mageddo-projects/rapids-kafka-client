@@ -37,8 +37,8 @@ public class Ex01 {
             .delay(Duration.ofSeconds(29))
             .build()
         )
-        .recoverCallback((record, lastFailure) -> {
-          log.info("status=recovering, record={}", new String(record.value()));
+        .recoverCallback((ctx) -> {
+          log.info("status=recovering, record={}", new String(ctx.record().value()));
         })
         .batchCallback((ctx, records) -> {
           for (final ConsumerRecord<String, byte[]> record : records) {

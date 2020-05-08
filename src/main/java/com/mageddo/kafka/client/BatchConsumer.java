@@ -15,26 +15,29 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
-  private final Consumers<K, V> consumerConfig;
+  private final Consumers<K, V> consumers;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
     final Retrier retrier = Retrier
         .builder()
-        .retryPolicy(this.consumerConfig.retryPolicy())
+        .retryPolicy(this.consumers.retryPolicy())
         .onRetry(() -> {
           log.info("failed to consume");
           for (final TopicPartition partition : records.partitions()) {
-            commitFirstRecord(consumer, records, partition);
+            commitFirstRecord(this.consumer, records, partition);
           }
         })
         .onExhausted((lastFailure) -> {
           log.info("status=exhausted-tries, records={}", records.count());
-          records.forEach(record -> doRecoverWhenAvailable(
-              this.consumer,
-              this.consumerConfig,
-              record,
-              lastFailure
+          records.forEach(record -> this.doRecoverWhenAvailable(
+              DefaultRecoverContext
+              .<K, V>builder()
+              .consumer(this.consumer)
+              .lastFailure(lastFailure)
+              .record(record)
+              .build(),
+              this.consumers.recoverCallback()
           ));
         })
         .build();
@@ -44,11 +47,12 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
         log.trace("status=consuming, records={}", records);
       }
       try {
-        this.consumerConfig
+        this.consumers
             .batchCallback()
             .accept(
                 DefaultContext
                     .<K, V>builder()
+                    .consumer(this.consumer)
                     .records(records)
                     .build(),
                 records
@@ -67,7 +71,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
 
   @Override
   protected Consumers<K, V> consumerConfig() {
-    return this.consumerConfig;
+    return this.consumers;
   }
 
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {

@@ -40,9 +40,9 @@ class RecordConsumerTest {
           timesRetried.incrementAndGet();
           throw new RuntimeException("Failed consuming");
         })
-        .recoverCallback((record, lastFailure) -> {
-          assertNotNull(lastFailure);
-          assertEquals("Failed consuming", lastFailure.getMessage());
+        .recoverCallback((ctx) -> {
+          assertNotNull(ctx.lastFailure());
+          assertEquals("Failed consuming", ctx.lastFailure().getMessage());
           recoverCalled.set(true);
         })
         .retryPolicy(
@@ -78,9 +78,9 @@ class RecordConsumerTest {
         .callback((ctx, record) -> {
           throw new RuntimeException("Failed consuming");
         })
-        .recoverCallback((record, lastFailure) -> {
-          assertNotNull(lastFailure);
-          assertEquals("Failed consuming", lastFailure.getMessage());
+        .recoverCallback((ctx) -> {
+          assertNotNull(ctx.lastFailure());
+          assertEquals("Failed consuming", ctx.lastFailure().getMessage());
           recoverCalled.set(true);
         })
         .retryPolicy(
@@ -112,7 +112,7 @@ class RecordConsumerTest {
     final AtomicInteger timesRetried = new AtomicInteger();
     final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
         .toBuilder()
-        .recoverCallback((record, lastFailure) -> {
+        .recoverCallback((ctx) -> {
           fail("Can't recover");
         })
         .callback((ctx, record) -> {
