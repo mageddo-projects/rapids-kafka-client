@@ -40,7 +40,7 @@ class ConsumerFactoryTest {
 
     // arrange
     final String topic = "fruit_topic";
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .retryPolicy(RetryPolicy
             .builder()
@@ -67,7 +67,7 @@ class ConsumerFactoryTest {
 
     // arrange
     final String topic = "fruit_topic";
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
         .toBuilder()
         .retryPolicy(RetryPolicy
@@ -93,7 +93,7 @@ class ConsumerFactoryTest {
   @Test
   void mustCreateTwoConsumersWithOnePartitionEachAndTheLastConsumerWithTwo() {
     // arrange
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .consumers(2)
         .build();
@@ -136,7 +136,7 @@ class ConsumerFactoryTest {
   @Test
   void mustCreateThreeConsumersWithOnePartitionEach() {
     // arrange
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .consumers(3)
         .build();

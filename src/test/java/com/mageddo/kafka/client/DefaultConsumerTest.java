@@ -71,7 +71,7 @@ class DefaultConsumerTest {
         topic,
         PartitionInfoTemplates.build(topic)
     ));
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .pollInterval(Duration.ZERO)
         .build();

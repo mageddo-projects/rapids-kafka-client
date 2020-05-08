@@ -2,7 +2,7 @@ package examples;
 
 import java.time.Duration;
 
-import com.mageddo.kafka.client.ConsumerConfig;
+import com.mageddo.kafka.client.Consumers;
 import com.mageddo.kafka.client.RetryPolicy;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -47,8 +47,8 @@ public class Ex02 {
         .waitFor();
   }
 
-  private static ConsumerConfig.ConsumerConfigBuilder<String, byte[]> defaultConfig() {
-    return ConsumerConfig.<String, byte[]>builder()
+  private static Consumers.ConsumersBuilder<String, byte[]> defaultConfig() {
+    return Consumers.<String, byte[]>builder()
         .prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
         .prop(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())

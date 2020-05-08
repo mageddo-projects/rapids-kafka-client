@@ -3,7 +3,7 @@ package templates;
 import java.util.Arrays;
 import java.util.List;
 
-import com.mageddo.kafka.client.ConsumerConfig;
+import com.mageddo.kafka.client.Consumers;
 import com.mageddo.kafka.client.DefaultConsumer;
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -35,7 +35,7 @@ public class DefaultConsumerTemplates {
     }
 
     @Override
-    protected ConsumerConfig<K, V> consumerConfig() {
+    protected Consumers<K, V> consumerConfig() {
       return null;
     }
 

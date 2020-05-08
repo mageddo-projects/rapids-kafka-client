@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
-  private final ConsumerConfig<K, V> consumerConfig;
+  private final Consumers<K, V> consumerConfig;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
@@ -61,7 +61,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   }
 
   @Override
-  protected ConsumerConfig<K, V> consumerConfig() {
+  protected Consumers<K, V> consumerConfig() {
     return this.consumerConfig;
   }
 

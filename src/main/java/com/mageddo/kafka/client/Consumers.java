@@ -22,7 +22,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 @Builder
 @Accessors(chain = true, fluent = true)
 @AllArgsConstructor
-public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
+public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
 
   /**
    * @see ConsumerCreateConfig#props()
@@ -78,7 +78,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
    */
   private ConsumerSupplier<K, V> consumerSupplier;
 
-  public ConsumerConfig<K, V> prop(String k, Object v) {
+  public Consumers<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
   }
@@ -89,8 +89,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return Collections.unmodifiableMap(this.props);
   }
 
-  public ConsumerConfigBuilder<K, V> toBuilder() {
-    return new ConsumerConfigBuilder<K, V>()
+  public ConsumersBuilder<K, V> toBuilder() {
+    return new ConsumersBuilder<K, V>()
         .consumers(this.consumers)
         .topics(this.topics)
         .pollTimeout(this.pollTimeout)
@@ -107,7 +107,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return this.consume(this);
   }
 
-  public ConsumerFactory<K, V> consume(ConsumerConfig<K, V> consumerConfig) {
+  public ConsumerFactory<K, V> consume(Consumers<K, V> consumerConfig) {
     final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
     consumerFactory.consume(consumerConfig);
     return consumerFactory;
@@ -171,9 +171,9 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
   }
 
   @Slf4j
-  public static class ConsumerConfigBuilder<K, V> {
+  public static class ConsumersBuilder<K, V> {
 
-    public ConsumerConfigBuilder() {
+    public ConsumersBuilder() {
       this.props = new LinkedHashMap<>();
       this.consumers = 1;
       this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
@@ -183,7 +183,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
       this.consumerSupplier = ConsumerFactory.defaultConsumerSupplier();
     }
 
-    public ConsumerConfigBuilder<K, V> consumers(int consumers) {
+    public ConsumersBuilder<K, V> consumers(int consumers) {
       if(this.consumers == Integer.MIN_VALUE){
         log.info(
             "consumer was previously disabled by set it's value to {}, it won't be re enabled. groupId={}, topics={}",
@@ -196,23 +196,23 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
       this.consumers = consumers;
       return this;
     }
-    public ConsumerConfigBuilder<K, V> topics(String... topics) {
+    public ConsumersBuilder<K, V> topics(String... topics) {
       this.topics = Arrays.asList(topics);
       return this;
     }
 
-    public ConsumerConfigBuilder<K, V> topics(Collection<String> topics) {
+    public ConsumersBuilder<K, V> topics(Collection<String> topics) {
       this.topics = topics;
       return this;
     }
 
-    public ConsumerConfigBuilder<K, V> prop(String key, Object value) {
+    public ConsumersBuilder<K, V> prop(String key, Object value) {
       this.props.put(key, value);
       return this;
     }
 
-    public ConsumerConfig<K, V> build() {
-      return new ConsumerConfig<>(
+    public Consumers<K, V> build() {
+      return new Consumers<>(
           this.props,
           this.consumers,
           this.topics,

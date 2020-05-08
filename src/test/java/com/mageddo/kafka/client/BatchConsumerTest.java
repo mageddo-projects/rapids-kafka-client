@@ -33,7 +33,7 @@ class BatchConsumerTest {
 
     // arrange
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
         .toBuilder()
         .batchCallback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
@@ -70,7 +70,7 @@ class BatchConsumerTest {
 
     // arrange
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .batchCallback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
@@ -108,7 +108,7 @@ class BatchConsumerTest {
   void mustCommitAfterSuccessfullyConsume() {
     // arrange
     final AtomicInteger timesRetried = new AtomicInteger();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
         .toBuilder()
         .recoverCallback((record, lastFailure) -> {
           fail("Can't recover");
@@ -132,7 +132,7 @@ class BatchConsumerTest {
     assertEquals(1, timesRetried.get());
   }
 
-  protected DefaultConsumer<String, byte[]> createConsumer(ConsumerConfig<String, byte[]> consumerConfig) {
+  protected DefaultConsumer<String, byte[]> createConsumer(Consumers<String, byte[]> consumerConfig) {
     return new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
   }
 

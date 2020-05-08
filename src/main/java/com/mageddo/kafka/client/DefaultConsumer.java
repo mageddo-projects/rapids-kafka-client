@@ -26,7 +26,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
 
   protected abstract void consume(ConsumerRecords<K, V> records);
   protected abstract Consumer<K, V> consumer();
-  protected abstract ConsumerConfig<K, V> consumerConfig();
+  protected abstract Consumers<K, V> consumerConfig();
   protected abstract void onErrorCallback(Exception e);
 
   @Override

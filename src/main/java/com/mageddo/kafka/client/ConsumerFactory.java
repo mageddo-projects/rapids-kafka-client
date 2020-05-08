@@ -27,7 +27,7 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     return config -> new KafkaConsumer<>(config.props());
   }
 
-  public void consume(ConsumerConfig<K, V> consumerConfig) {
+  public void consume(Consumers<K, V> consumerConfig) {
     if (consumerConfig.consumers() == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
@@ -67,11 +67,11 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     log.info("status={} consumers started", startedConsumers);
   }
 
-  private int calcPartitionsByConsumer(ConsumerConfig<K, V> consumerConfig, int partitions) {
+  private int calcPartitionsByConsumer(Consumers<K, V> consumerConfig, int partitions) {
     return Math.max(1, partitions / consumerConfig.consumers());
   }
 
-  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
+  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, Consumers<K, V> consumerConfig) {
     if (consumerConfig.batchCallback() != null) {
       return bindInstance(new BatchConsumer<>(consumer, consumerConfig));
     }
@@ -100,12 +100,12 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     return partitions;
   }
 
-  Consumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
+  Consumer<K, V> create(Consumers<K, V> consumerConfig) {
     return consumerConfig.consumerSupplier()
         .get(consumerConfig);
   }
 
-  private void checkReasonablePollInterval(ConsumerConfig<K, V> consumerConfig) {
+  private void checkReasonablePollInterval(Consumers<K, V> consumerConfig) {
     final int defaultPollInterval = (int) Duration
         .ofMinutes(5)
         .toMillis();
