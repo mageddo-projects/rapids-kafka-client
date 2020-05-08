@@ -38,7 +38,7 @@ public class ConsumerFactory<K, V> {
       final ThreadConsumer<K, V> threadConsumer = getInstance(consumer, consumerConfig);
       threadConsumer.start(consumerPartitions);
 
-      i++;
+      startedConsumers++;
     }
     final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, Integer.MAX_VALUE);
     if(consumerPartitions.isEmpty()){
@@ -50,39 +50,8 @@ public class ConsumerFactory<K, V> {
     log.info("status={} consumers started", startedConsumers);
   }
 
-  /**
-   * @return true if terminated the available partitions
-   */
-  @Deprecated
-  private boolean assignPartitionsAndStart(
-      Consumer<K, V> preCreatedConsumer,
-      ConsumerConfig<K, V> consumerConfig,
-      Deque<PartitionInfo> partitions,
-      int partitionsByConsumer
-  ) {
-    final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, partitionsByConsumer);
-    if(consumerPartitions.isEmpty()){
-      log.info("status=no-consumerPartitions-left, there will be idle consumers");
-      return true;
-    }
-    final Consumer<K, V> consumer = preCreatedConsumer != null ? preCreatedConsumer : create(consumerConfig);
-    final ThreadConsumer<K, V> threadConsumer = getInstance(consumer, consumerConfig);
-    threadConsumer.start(consumerPartitions);
-    return false;
-  }
-
   private int calcPartitionsByConsumer(ConsumerConfig<K, V> consumerConfig, int partitions) {
     return Math.max(1, partitions / consumerConfig.consumers());
-  }
-
-  @Deprecated
-  private List<Consumer<K, V>> createConsumers(ConsumerConfig<K, V> consumerConfig, Consumer<K, V> firstConsumer) {
-    final List<Consumer<K, V>> consumers = new ArrayList<>();
-    consumers.add(firstConsumer);
-    for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
-      consumers.add(create(consumerConfig));
-    }
-    return consumers;
   }
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {

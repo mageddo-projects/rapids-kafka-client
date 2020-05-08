@@ -132,4 +132,48 @@ class ConsumerFactoryTest {
     assertEquals(3, secondConsumerPartitions.get(1)
         .partition());
   }
+
+  @Test
+  void mustCreateThreeConsumersWithOnePartitionEach() {
+    // arrange
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+        .<String, byte[]>builder()
+        .consumers(3)
+        .build();
+    final String topic = "fruit_topic";
+
+    doReturn(this.threadConsumer).when(this.consumerFactory)
+        .getInstance(any(), any());
+
+    doReturn(ConsumerTemplates.build(topic, Arrays.asList(
+        PartitionInfoTemplates.build(topic, 1),
+        PartitionInfoTemplates.build(topic, 2),
+        PartitionInfoTemplates.build(topic, 3)
+    )))
+        .when(this.consumerFactory)
+        .create(eq(consumerConfig));
+
+    // act
+    this.consumerFactory.consume(consumerConfig);
+
+    // assert
+
+    final ArgumentCaptor<List<PartitionInfo>> argumentCaptor = ArgumentCaptor.forClass(List.class);
+    verify(this.threadConsumer, times(3)).start(argumentCaptor.capture());
+    final List<List<PartitionInfo>> partitions = argumentCaptor.getAllValues();
+    assertEquals(3, partitions.size());
+
+    final List<PartitionInfo> firstConsumerPartitions = partitions.get(0);
+    assertEquals(1, firstConsumerPartitions.size());
+    assertEquals(1, firstConsumerPartitions.get(0)
+        .partition());
+
+    final List<PartitionInfo> secondConsumerPartitions = partitions.get(1);
+    assertEquals(1, secondConsumerPartitions.size());
+    assertEquals(2, secondConsumerPartitions.get(0).partition());
+
+    final List<PartitionInfo> thirdConsumerPartitions = partitions.get(2);
+    assertEquals(1, thirdConsumerPartitions.size());
+    assertEquals(3, thirdConsumerPartitions.get(0).partition());
+  }
 }
