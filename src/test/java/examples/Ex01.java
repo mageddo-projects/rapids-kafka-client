@@ -3,7 +3,6 @@ package examples;
 import java.time.Duration;
 
 import com.mageddo.kafka.client.ConsumerConfig;
-import com.mageddo.kafka.client.ConsumerFactory;
 import com.mageddo.kafka.client.RetryPolicy;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,8 +23,7 @@ public class Ex01 {
 
     TopicMessageSender.keepSendingMessages();
 
-    final ConsumerFactory<String, byte[]> consumerFactory = new ConsumerFactory<>();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfig.<String, byte[]>builder()
+    ConsumerConfig.<String, byte[]>builder()
         .prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
         .prop(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
@@ -51,11 +49,13 @@ public class Ex01 {
             log.info("key={}, value={}", record.key(), new String(record.value()));
           }
         })
-        .build();
+        .build()
+        .consume()
+    ;
 
-    consumerFactory.consume(consumerConfig);
     log.info("waiting termination....");
-    Thread.currentThread().join();
+    Thread.currentThread()
+        .join();
     log.info("exiting......");
   }
 

@@ -78,6 +78,10 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
    */
   private ConsumerSupplier<K, V> consumerSupplier;
 
+  public ConsumerFactory<K, V> consume(){
+    return Consumers.consume(this);
+  }
+
   public ConsumerConfig<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
