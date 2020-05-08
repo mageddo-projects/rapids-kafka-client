@@ -2,22 +2,14 @@ package com.mageddo.kafka.client;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import lombok.SneakyThrows;
-
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.MockConsumer;
-import org.apache.kafka.common.PartitionInfo;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import lombok.SneakyThrows;
 import templates.ConsumerConfigTemplates;
-import templates.ConsumerRecordTemplates;
-import templates.ConsumerTemplates;
 import templates.DefaultConsumerTemplates;
 import templates.DefaultConsumerTemplates.MockedDefaultConsumer;
 import templates.PartitionInfoTemplates;

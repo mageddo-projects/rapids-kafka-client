@@ -1,5 +1,8 @@
 package templates;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.mageddo.kafka.client.ConsumerConfig;
 import com.mageddo.kafka.client.DefaultConsumer;
 
@@ -7,9 +10,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.PartitionInfo;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class DefaultConsumerTemplates {
   public static class MockedDefaultConsumer<K, V> extends DefaultConsumer<K, V> {

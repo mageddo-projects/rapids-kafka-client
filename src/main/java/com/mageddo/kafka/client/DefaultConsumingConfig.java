@@ -1,11 +1,11 @@
 package com.mageddo.kafka.client;
 
+import java.time.Duration;
+
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
-
-import java.time.Duration;
 
 @Value
 @Builder

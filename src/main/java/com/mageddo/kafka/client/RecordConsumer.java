@@ -2,12 +2,11 @@ package com.mageddo.kafka.client;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import lombok.RequiredArgsConstructor;
-
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,9 +38,13 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
             if (log.isTraceEnabled()) {
               log.info("status=consuming, record={}", record);
             }
-            this.consumerConfig
-                .callback()
-                .accept(this.consumer, record, null);
+            try {
+              this.consumerConfig
+                  .callback()
+                  .accept(this.consumer, record, null);
+            } catch (Exception e) {
+              Exceptions.throwException(e);
+            }
           });
       if (recovered.get()) {
         // pare o consumo para fazer poll imediatamente
@@ -65,9 +68,13 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
 
   @Override
   protected void onErrorCallback(Exception e) {
-    this.consumerConfig
-        .callback()
-        .accept(this.consumer, null, e);
+    try {
+      this.consumerConfig
+          .callback()
+          .accept(this.consumer, null, e);
+    } catch (Exception ex) {
+      Exceptions.throwException(e);
+    }
   }
 
 }

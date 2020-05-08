@@ -2,8 +2,6 @@ package com.mageddo.kafka.client;
 
 import org.junit.jupiter.api.Test;
 
-import templates.ConsumerConfigTemplates;
-
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;

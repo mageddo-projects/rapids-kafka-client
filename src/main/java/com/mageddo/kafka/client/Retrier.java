@@ -3,13 +3,12 @@ package com.mageddo.kafka.client;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
-import lombok.extern.slf4j.Slf4j;
-
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.mageddo.kafka.client.RetryPolicyConverter.retryPolicyToFailSafeRetryPolicy;
 

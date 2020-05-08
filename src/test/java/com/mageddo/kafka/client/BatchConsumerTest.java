@@ -5,11 +5,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.slf4j.Slf4j;
 import templates.ConsumerConfigTemplates;
 import templates.ConsumerRecordTemplates;
 import templates.ConsumerRecordsTemplates;

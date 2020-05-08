@@ -1,12 +1,12 @@
 package com.mageddo.kafka.client;
 
-import lombok.Builder;
-import lombok.Value;
-
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+
+import lombok.Builder;
+import lombok.Value;
 
 @Value
 @Builder

@@ -1,8 +1,8 @@
 package templates;
 
-import lombok.experimental.UtilityClass;
-
 import org.apache.kafka.common.PartitionInfo;
+
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class PartitionInfoTemplates {
