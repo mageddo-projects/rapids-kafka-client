@@ -66,7 +66,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
         this.onErrorCallback(e);
       }
       if(!Duration.ZERO.equals(consumingConfig.pollInterval())){
-        sleep(consumingConfig.pollInterval());
+        this.sleep(consumingConfig.pollInterval());
       }
     }
   }

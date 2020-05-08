@@ -19,11 +19,16 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL
 @Slf4j
 public class ConsumerFactory<K, V> {
 
+  public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
+    return config -> new KafkaConsumer<>(config.props());
+  }
+
   public void consume(ConsumerConfig<K, V> consumerConfig) {
     if (consumerConfig.consumers() == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
-          consumerConfig.props().get(GROUP_ID_CONFIG),
+          consumerConfig.props()
+              .get(GROUP_ID_CONFIG),
           consumerConfig.topics()
       );
       return;
@@ -87,7 +92,8 @@ public class ConsumerFactory<K, V> {
   }
 
   Consumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
-    return new KafkaConsumer<>(consumerConfig.props());
+    return consumerConfig.consumerSupplier()
+        .get(consumerConfig);
   }
 
   private void checkReasonablePollInterval(ConsumerConfig<K, V> consumerConfig) {

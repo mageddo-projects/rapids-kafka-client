@@ -46,6 +46,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
 
   private BatchConsumeCallback<K, V> batchCallback;
 
+  private ConsumerSupplier<K, V> consumerSupplier;
+
   public ConsumerConfig<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
@@ -81,6 +83,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
       this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
       this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
       this.topics = Collections.EMPTY_LIST;
+      this.consumerSupplier = ConsumerFactory.defaultConsumerSupplier();
     }
 
     public ConsumerConfigBuilder<K, V> consumers(int consumers) {
@@ -121,7 +124,8 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
           this.retryPolicy,
           this.recoverCallback,
           this.callback,
-          this.batchCallback
+          this.batchCallback,
+          this.consumerSupplier
       );
     }
 
