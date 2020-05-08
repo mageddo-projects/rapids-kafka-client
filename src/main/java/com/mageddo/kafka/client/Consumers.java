@@ -140,11 +140,11 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     );
   }
 
-  public ConsumerFactory<K, V> consume(BatchConsumeCallback<K, V> batchConsumeCallback) {
-    return this.consume(batchConsumeCallback, null);
+  public ConsumerFactory<K, V> batchConsume(BatchConsumeCallback<K, V> batchConsumeCallback) {
+    return this.batchConsume(batchConsumeCallback, null);
   }
 
-  public ConsumerFactory<K, V> consume(
+  public ConsumerFactory<K, V> batchConsume(
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback
   ) {
@@ -156,7 +156,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     );
   }
 
-  public ConsumerFactory<K, V> consume(
+  public ConsumerFactory<K, V> batchConsume(
       String topic,
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback
