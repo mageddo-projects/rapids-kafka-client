@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -13,8 +14,9 @@ import lombok.Value;
 public class RetryPolicy {
 
   @Builder.Default
-  private int maxTries = 2;
+  private int maxTries = 0;
 
+  @NonNull
   private Duration delay;
 
   private Duration maxDelay;
@@ -22,6 +24,9 @@ public class RetryPolicy {
   private Collection<Class<? extends Throwable>> retryableExceptions;
 
   public Duration calcMaxTotalWaitTime(){
+    if(this.delay.equals(Duration.ZERO) || this.maxTries == 0){
+      return Duration.ZERO;
+    }
     return Duration.ofMillis(this.delay.toMillis() * maxTries);
   }
 

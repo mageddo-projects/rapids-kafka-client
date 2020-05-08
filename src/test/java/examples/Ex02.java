@@ -28,7 +28,7 @@ public class Ex02 {
     final ConsumerConfig<String, byte[]> consumerConfig = defaultConfig()
         .topics("stock_client_v2")
         .prop(GROUP_ID_CONFIG, "stock_client")
-        .consumers(11)
+        .consumers(1)
         .retryPolicy(RetryPolicy
             .builder()
             .maxTries(1)
