@@ -2,7 +2,8 @@ package com.mageddo.kafka.client;
 
 import org.junit.jupiter.api.Test;
 
-import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
+import templates.ConsumerConfigTemplates;
+
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -45,5 +46,26 @@ class ConsumerConfigTest {
     assertEquals(3, consumerConfig.props().size());
     assertEquals(3, copy.props().size());
     assertNotEquals(System.identityHashCode(consumerConfig), System.identityHashCode(copy));
+  }
+
+  @Test
+  void consumersConfigMustStayDisabled(){
+    // arrange
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfig
+        .<String, byte[]>builder()
+        .consumers(Integer.MIN_VALUE)
+        .consumers(5)
+        .build();
+
+    // act
+    final int consumers =  consumerConfig
+        .toBuilder()
+        .consumers(10)
+        .build()
+        .consumers()
+    ;
+
+    // assert
+    assertEquals(Integer.MIN_VALUE, consumers);
   }
 }

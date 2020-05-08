@@ -12,9 +12,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 @Value
 @Builder
@@ -69,6 +71,7 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
         ;
   }
 
+  @Slf4j
   public static class ConsumerConfigBuilder<K, V> {
 
     public ConsumerConfigBuilder() {
@@ -80,6 +83,19 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
       this.topics = Collections.EMPTY_LIST;
     }
 
+    public ConsumerConfigBuilder<K, V> consumers(int consumers) {
+      if(this.consumers == Integer.MIN_VALUE){
+        log.info(
+            "consumer was previously disabled by set it's value to {}, it won't be re enabled. groupId={}, topics={}",
+            Integer.MIN_VALUE,
+            this.props.get(GROUP_ID_CONFIG),
+            this.topics
+        );
+        return this;
+      }
+      this.consumers = consumers;
+      return this;
+    }
     public ConsumerConfigBuilder<K, V> topics(String... topics) {
       this.topics = Arrays.asList(topics);
       return this;

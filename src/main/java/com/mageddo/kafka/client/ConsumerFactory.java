@@ -13,13 +13,21 @@ import org.apache.kafka.common.PartitionInfo;
 
 import lombok.extern.slf4j.Slf4j;
 
+import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 @Slf4j
 public class ConsumerFactory<K, V> {
 
   public void consume(ConsumerConfig<K, V> consumerConfig) {
-
+    if (consumerConfig.consumers() == Integer.MIN_VALUE) {
+      log.info(
+          "status=disabled-consumer, groupId={}, topics={}",
+          consumerConfig.props().get(GROUP_ID_CONFIG),
+          consumerConfig.topics()
+      );
+      return;
+    }
     this.checkReasonablePollInterval(consumerConfig);
 
     final Consumer<K, V> firstConsumer = create(consumerConfig);
@@ -30,7 +38,7 @@ public class ConsumerFactory<K, V> {
     for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
 
       final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, partitionsByConsumer);
-      if(consumerPartitions.isEmpty()){
+      if (consumerPartitions.isEmpty()) {
         log.info("status=no-consumerPartitions-left, there will be idle consumers");
         break;
       }
@@ -41,9 +49,9 @@ public class ConsumerFactory<K, V> {
       startedConsumers++;
     }
     final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, Integer.MAX_VALUE);
-    if(consumerPartitions.isEmpty()){
+    if (consumerPartitions.isEmpty()) {
       log.debug("status=no-consumer-partitions-left-for-first-consumer");
-      return ;
+      return;
     }
     final ThreadConsumer<K, V> threadConsumer = getInstance(firstConsumer, consumerConfig);
     threadConsumer.start(consumerPartitions);
@@ -55,7 +63,7 @@ public class ConsumerFactory<K, V> {
   }
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
-    if(consumerConfig.batchCallback() != null){
+    if (consumerConfig.batchCallback() != null) {
       return new BatchConsumer<>(consumer, consumerConfig);
     }
     return new RecordConsumer<>(consumer, consumerConfig);
