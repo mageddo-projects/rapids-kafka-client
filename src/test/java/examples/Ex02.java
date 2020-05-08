@@ -3,7 +3,6 @@ package examples;
 import java.time.Duration;
 
 import com.mageddo.kafka.client.ConsumerConfig;
-import com.mageddo.kafka.client.Consumers;
 import com.mageddo.kafka.client.RetryPolicy;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -25,7 +24,7 @@ public class Ex02 {
 
     TopicMessageSender.keepSendingMessages();
 
-    final ConsumerConfig<String, byte[]> consumerConfig = defaultConfig()
+    defaultConfig()
         .topics("stock_client_v2")
         .prop(GROUP_ID_CONFIG, "stock_client")
         .consumers(1)
@@ -35,21 +34,17 @@ public class Ex02 {
             .delay(Duration.ofSeconds(29))
             .build()
         )
-        .build();
-
-    Consumers.batchConsume(
-        consumerConfig,
-        (consumer, records, e) -> {
-          for (final ConsumerRecord<String, byte[]> record : records) {
-            log.info("key={}, value={}", record.key(), new String(record.value()));
-          }
-        },
-        (record, lastFailure) -> {
-          log.info("status=recovering, record={}", new String(record.value()));
-        }
-    );
-
-    Consumers.waitFor();
+        .build()
+        .batchConsume((consumer, records, e) -> {
+              for (final ConsumerRecord<String, byte[]> record : records) {
+                log.info("key={}, value={}", record.key(), new String(record.value()));
+              }
+            },
+            (record, lastFailure) -> {
+              log.info("status=recovering, record={}", new String(record.value()));
+            }
+        )
+        .waitFor();
   }
 
   private static ConsumerConfig.ConsumerConfigBuilder<String, byte[]> defaultConfig() {
@@ -57,7 +52,8 @@ public class Ex02 {
         .prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
         .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
         .prop(VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getName())
-        .prop(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(5).toMillis());
+        .prop(MAX_POLL_INTERVAL_MS_CONFIG, (int) Duration.ofMinutes(5)
+            .toMillis());
   }
 
 }

@@ -11,6 +11,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.PartitionInfo;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
@@ -145,5 +146,14 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
       consumer.close();
     }
     this.closed = true;
+  }
+
+  /**
+   * wait until all consumers threads termination
+   */
+  @SneakyThrows
+  public void waitFor() {
+    Thread.currentThread()
+        .join();
   }
 }

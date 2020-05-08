@@ -16,10 +16,10 @@ class ConsumersTest {
         .build();
 
     // act
-    Consumers.consume(consumerConfig
+    consumerConfig
         .toBuilder()
         .build()
-    );
+        .consume();
 
     // assert
 

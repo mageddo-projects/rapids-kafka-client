@@ -78,10 +78,6 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
    */
   private ConsumerSupplier<K, V> consumerSupplier;
 
-  public ConsumerFactory<K, V> consume(){
-    return Consumers.consume(this);
-  }
-
   public ConsumerConfig<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
@@ -105,6 +101,73 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
         .batchCallback(this.batchCallback)
         .props(this.props)
         ;
+  }
+
+  public ConsumerFactory<K, V> consume(){
+    return this.consume(this);
+  }
+
+  public ConsumerFactory<K, V> consume(ConsumerConfig<K, V> consumerConfig) {
+    final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
+    consumerFactory.consume(consumerConfig);
+    return consumerFactory;
+  }
+
+  public ConsumerFactory<K, V> consume(ConsumeCallback<K, V> consumeCallback) {
+    return consume(consumeCallback, null);
+  }
+
+  public ConsumerFactory<K, V> consume(ConsumeCallback<K, V> consumeCallback, RecoverCallback<K, V> recoverCallback) {
+    return this.consume(this
+        .toBuilder()
+        .callback(consumeCallback)
+        .recoverCallback(recoverCallback)
+        .build()
+    );
+  }
+
+  public ConsumerFactory<K, V> consume(
+      String topic,
+      ConsumeCallback<K, V> consumeCallback,
+      RecoverCallback<K, V> recoverCallback
+  ) {
+    return this.consume(this
+        .toBuilder()
+        .topics(Collections.singletonList(topic))
+        .callback(consumeCallback)
+        .recoverCallback(recoverCallback)
+        .build()
+    );
+  }
+
+  public ConsumerFactory<K, V> consume(BatchConsumeCallback<K, V> batchConsumeCallback) {
+    return batchConsume(batchConsumeCallback, null);
+  }
+
+  public ConsumerFactory<K, V> batchConsume(
+      BatchConsumeCallback<K, V> batchConsumeCallback,
+      RecoverCallback<K, V> recoverCallback
+  ) {
+    return this.consume(this
+        .toBuilder()
+        .batchCallback(batchConsumeCallback)
+        .recoverCallback(recoverCallback)
+        .build()
+    );
+  }
+
+  public ConsumerFactory<K, V> batchConsume(
+      String topic,
+      BatchConsumeCallback<K, V> batchConsumeCallback,
+      RecoverCallback<K, V> recoverCallback
+  ) {
+    return this.consume(this
+        .toBuilder()
+        .topics(Collections.singletonList(topic))
+        .batchCallback(batchConsumeCallback)
+        .recoverCallback(recoverCallback)
+        .build()
+    );
   }
 
   @Slf4j
