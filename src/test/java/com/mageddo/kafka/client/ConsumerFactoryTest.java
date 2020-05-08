@@ -40,9 +40,8 @@ class ConsumerFactoryTest {
 
     // arrange
     final String topic = "fruit_topic";
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
-    consumerConfig
-        .toBuilder()
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+        .<String, byte[]>builder()
         .retryPolicy(RetryPolicy
             .builder()
             .delay(Duration.ofMinutes(3))

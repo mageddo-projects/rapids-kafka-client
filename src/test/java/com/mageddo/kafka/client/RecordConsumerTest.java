@@ -34,9 +34,8 @@ class RecordConsumerTest {
     // arrange
     final AtomicInteger timesRetried = new AtomicInteger();
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
-    consumerConfig
-        .toBuilder()
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+        .<String, byte[]>builder()
         .callback((c, record, error) -> {
           timesRetried.incrementAndGet();
           throw new RuntimeException("Failed consuming");
@@ -74,9 +73,8 @@ class RecordConsumerTest {
 
     // arrange
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
-    consumerConfig
-        .toBuilder()
+    final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates
+        .<String, byte[]>builder()
         .callback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
         })
