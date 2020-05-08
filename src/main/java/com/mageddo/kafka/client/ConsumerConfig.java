@@ -5,45 +5,40 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
-import lombok.Setter;
+import lombok.Value;
 import lombok.experimental.Accessors;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 
-@Data
-@Builder(toBuilder = true, buildMethodName = "$build")
+@Value
+@Builder
 @Accessors(chain = true, fluent = true)
-@NoArgsConstructor
 @AllArgsConstructor
 public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
 
-  private final Map<String, Object> props = new HashMap<>();
+  private Map<String, Object> props;
 
-  @Builder.Default
-  private int consumers = 1;
+  private int consumers;
 
   @NonNull
   private Collection<String> topics;
 
   @NonNull
-  @Builder.Default
-  private Duration timeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
+  private Duration timeout;
 
   @NonNull
-  @Builder.Default
-  private Duration interval = DefaultConsumingConfig.FPS_30_DURATION;
+  private Duration interval;
 
   @NonNull
-  @Builder.Default
-  private RetryPolicy retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+  private RetryPolicy retryPolicy;
 
   private RecoverCallback<K, V> recoverCallback;
 
@@ -56,20 +51,35 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     return this;
   }
 
-  public ConsumerConfig<K, V> copy() {
-    return ConsumerConfigBuilder.class.cast(this.toBuilder())
-        .build();
-  }
-
   public Map<String, Object> props() {
     this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
     this.prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     return Collections.unmodifiableMap(this.props);
   }
 
+  public ConsumerConfigBuilder<K, V> toBuilder() {
+    return new ConsumerConfigBuilder<K, V>()
+        .consumers(this.consumers)
+        .topics(this.topics)
+        .timeout(this.timeout)
+        .interval(this.interval)
+        .retryPolicy(this.retryPolicy)
+        .recoverCallback(this.recoverCallback)
+        .callback(this.callback)
+        .batchCallback(this.batchCallback)
+        .props(this.props)
+        ;
+  }
+
   public static class ConsumerConfigBuilder<K, V> {
 
-    private Map<String, Object> props = new HashMap<>();
+    public ConsumerConfigBuilder() {
+      this.props = new LinkedHashMap<>();
+      this.consumers = 1;
+      this.timeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
+      this.interval = DefaultConsumingConfig.FPS_30_DURATION;
+      this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+    }
 
     public ConsumerConfigBuilder<K, V> topics(String... topics) {
       this.topics = Arrays.asList(topics);
@@ -87,9 +97,18 @@ public class ConsumerConfig<K, V> implements ConsumerCreateConfig<K, V>, Consumi
     }
 
     public ConsumerConfig<K, V> build() {
-      final ConsumerConfig<K, V> config = $build();
-      this.props.forEach(config::prop);
-      return config;
+      return new ConsumerConfig<>(
+          this.props,
+          this.consumers,
+          this.topics,
+          this.timeout,
+          this.interval,
+          this.retryPolicy,
+          this.recoverCallback,
+          this.callback,
+          this.batchCallback
+      );
     }
+
   }
 }

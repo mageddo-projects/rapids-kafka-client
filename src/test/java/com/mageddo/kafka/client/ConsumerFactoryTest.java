@@ -8,9 +8,7 @@ import java.util.List;
 import org.apache.kafka.common.PartitionInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.extension.Extensions;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -21,7 +19,6 @@ import templates.PartitionInfoTemplates;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -45,12 +42,14 @@ class ConsumerFactoryTest {
     final String topic = "fruit_topic";
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
+        .toBuilder()
         .retryPolicy(RetryPolicy
             .builder()
             .delay(Duration.ofMinutes(3))
             .maxTries(2)
             .build()
-        );
+        )
+        .build();
 
     doReturn(ConsumerTemplates.build(topic, Collections.emptyList()))
         .when(this.consumerFactory)
@@ -71,12 +70,14 @@ class ConsumerFactoryTest {
     final String topic = "fruit_topic";
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
+        .toBuilder()
         .retryPolicy(RetryPolicy
             .builder()
             .delay(Duration.ofMinutes(2))
             .maxTries(2)
             .build()
-        );
+        )
+        .build();
 
     doReturn(ConsumerTemplates.build(topic, Collections.emptyList()))
         .when(this.consumerFactory)
@@ -122,11 +123,14 @@ class ConsumerFactoryTest {
 
     final List<PartitionInfo> firstConsumerPartitions = partitions.get(0);
     assertEquals(1, firstConsumerPartitions.size());
-    assertEquals(1, firstConsumerPartitions.get(0).partition());
+    assertEquals(1, firstConsumerPartitions.get(0)
+        .partition());
 
     final List<PartitionInfo> secondConsumerPartitions = partitions.get(1);
     assertEquals(2, secondConsumerPartitions.size());
-    assertEquals(2, secondConsumerPartitions.get(0).partition());
-    assertEquals(3, secondConsumerPartitions.get(1).partition());
+    assertEquals(2, secondConsumerPartitions.get(0)
+        .partition());
+    assertEquals(3, secondConsumerPartitions.get(1)
+        .partition());
   }
 }

@@ -1,9 +1,9 @@
 package com.mageddo.kafka.client;
 
+import java.util.Collections;
+
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-
-import java.util.Collections;
 
 @UtilityClass
 public class Consumers {
@@ -28,9 +28,10 @@ public class Consumers {
     final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
     consumerFactory.consume(
         consumerConfig
-            .copy()
+            .toBuilder()
             .callback(consumeCallback)
             .recoverCallback(recoverCallback)
+            .build()
     );
   }
 
@@ -43,10 +44,11 @@ public class Consumers {
     final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
     consumerFactory.consume(
         consumerConfig
-            .copy()
+            .toBuilder()
             .topics(Collections.singletonList(topic))
             .callback(consumeCallback)
             .recoverCallback(recoverCallback)
+            .build()
     );
   }
 
@@ -65,9 +67,10 @@ public class Consumers {
     final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
     consumerFactory.consume(
         consumerConfig
-            .copy()
+            .toBuilder()
             .batchCallback(batchConsumeCallback)
             .recoverCallback(recoverCallback)
+            .build()
     );
   }
 
@@ -80,10 +83,11 @@ public class Consumers {
     final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
     consumerFactory.consume(
         consumerConfig
-            .copy()
+            .toBuilder()
             .topics(Collections.singletonList(topic))
             .batchCallback(batchConsumeCallback)
             .recoverCallback(recoverCallback)
+            .build()
     );
   }
 
@@ -91,7 +95,8 @@ public class Consumers {
    * wait until all threads terminate to end the program
    */
   @SneakyThrows
-  public static void waitFor(){
-    Thread.currentThread().join();
+  public static void waitFor() {
+    Thread.currentThread()
+        .join();
   }
 }

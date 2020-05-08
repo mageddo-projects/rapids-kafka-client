@@ -36,6 +36,7 @@ class RecordConsumerTest {
     final AtomicBoolean recoverCalled = new AtomicBoolean();
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
+        .toBuilder()
         .callback((c, record, error) -> {
           timesRetried.incrementAndGet();
           throw new RuntimeException("Failed consuming");
@@ -51,7 +52,8 @@ class RecordConsumerTest {
                 .maxTries(2)
                 .delay(Duration.ofMillis(5))
                 .build()
-        );
+        )
+        .build();
     final DefaultConsumer<String, byte[]> consumer = createConsumer(consumerConfig);
     final ConsumerRecords<String, byte[]> records = ConsumerRecordsTemplates.build(
         TOPIC,
@@ -74,6 +76,7 @@ class RecordConsumerTest {
     final AtomicBoolean recoverCalled = new AtomicBoolean();
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
+        .toBuilder()
         .callback((c, record, error) -> {
           throw new RuntimeException("Failed consuming");
         })
@@ -88,7 +91,8 @@ class RecordConsumerTest {
                 .maxTries(0)
                 .delay(Duration.ofMillis(5))
                 .build()
-        );
+        )
+        .build();
     final DefaultConsumer<String, byte[]> consumer = createConsumer(consumerConfig);
     final ConsumerRecords<String, byte[]> records = ConsumerRecordsTemplates.build(
         TOPIC,
@@ -109,13 +113,15 @@ class RecordConsumerTest {
     // arrange
     final AtomicInteger timesRetried = new AtomicInteger();
     final ConsumerConfig<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+        .toBuilder()
         .recoverCallback((record, lastFailure) -> {
           fail("Can't recover");
         })
         .callback((c, record, error) -> {
           log.info("consumed: {}", new String(record.value()));
           timesRetried.incrementAndGet();
-        });
+        })
+        .build();
     final DefaultConsumer<String, byte[]> consumer = createConsumer(consumerConfig);
     final ConsumerRecords<String, byte[]> records = ConsumerRecordsTemplates.build(
         TOPIC,
