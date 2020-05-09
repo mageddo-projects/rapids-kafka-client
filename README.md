@@ -40,8 +40,11 @@ Consumers.<String, String>builder()
 
 # Examples
 * [Vanilla][1]
-* [Spring Framework][1]
-* [Micronaut][1]
-* [Quarkus][1]
+* [Spring Framework][2]
+* [Micronaut][3]
+* [Quarkus][4]
 
-[1]: #
+[1]: https://github.com/mageddo-projects/kafka-client-examples/tree/master/vanilla
+[2]: https://github.com/mageddo-projects/kafka-client-examples/tree/master/spring
+[3]: https://github.com/mageddo-projects/kafka-client-examples/tree/master/micronaut
+[4]: https://github.com/mageddo-projects/kafka-client-examples/tree/master/quarkus
