@@ -25,7 +25,9 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
           .builder()
           .retryPolicy(this.consumers.retryPolicy())
           .onExhausted((lastFailure) -> {
-            log.info("exhausted tries");
+            if(log.isDebugEnabled()){
+              log.debug("exhausted tries");
+            }
             this.doRecoverWhenAvailable(
                 DefaultRecoverContext
                     .<K, V>builder()
