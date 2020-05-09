@@ -152,8 +152,8 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
    * wait until all consumers threads termination
    */
   @SneakyThrows
-  public void waitFor() {
-    Thread.currentThread()
-        .join();
+  public ConsumerFactory<K, V> waitFor() {
+    Thread.currentThread().join();
+    return this;
   }
 }
