@@ -1,13 +1,13 @@
 # Kafka Client
 
-Kafka Client is a vanilla java library that make it easy to consume data from kafka,
+Kafka Client is a vanilla java library that makes it easy to consume data from kafka,
  a list of features:
 
 * [x] Parallel consuming
 * [x] Consuming retry
 * [x] Consuming failover
 * [x] Designed to be easy to mock and test
-* [x] Designed to support slow consumers without re balancing
+* [x] Designed to support slow consumers without kafka re balancing
 * [x] Designed to high throughput usage
 * [x] Individual record consuming
 * [x] Batch records consuming
@@ -15,6 +15,10 @@ Kafka Client is a vanilla java library that make it easy to consume data from ka
 * [x] Commits are managed for you based on behavior
 
 # Getting Started
+
+```groovy
+compile 'com.mageddo.kafka-client:kafka-client:1.0.0'
+```
 
 ```java
 Consumers.<String, String>builder()
@@ -24,7 +28,7 @@ Consumers.<String, String>builder()
 .prop(GROUP_ID_CONFIG, "stocks")
 .recoverCallback(ctx -> {
   // here you can send the message to another topic, send a SMS, etc.
-  log.info("status=recovering, record={}", ctx.record().value());
+  log.info("status=recovering, value={}", ctx.record().value());
 })
 .callback((ctx, record) -> {
   log.info("status=consumed, value={}", record.value());
@@ -40,4 +44,4 @@ Consumers.<String, String>builder()
 * [Micronaut][1]
 * [Quarkus][1]
 
-[1]: 1
+[1]: #
