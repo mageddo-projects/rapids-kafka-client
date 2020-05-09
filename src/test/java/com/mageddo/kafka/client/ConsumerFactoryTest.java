@@ -1,22 +1,16 @@
 package com.mageddo.kafka.client;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 
-import org.apache.kafka.common.PartitionInfo;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import templates.ConsumerConfigTemplates;
 import templates.ConsumerTemplates;
-import templates.PartitionInfoTemplates;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -24,7 +18,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -90,90 +83,4 @@ class ConsumerFactoryTest {
 
   }
 
-  @Test
-  void mustCreateTwoConsumersWithOnePartitionEachAndTheLastConsumerWithTwo() {
-    // arrange
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
-        .<String, byte[]>builder()
-        .consumers(2)
-        .build();
-    final String topic = "fruit_topic";
-
-    doReturn(this.threadConsumer).when(this.consumerFactory)
-        .getInstance(any(), any());
-
-    doReturn(ConsumerTemplates.build(topic, Arrays.asList(
-        PartitionInfoTemplates.build(topic, 1),
-        PartitionInfoTemplates.build(topic, 2),
-        PartitionInfoTemplates.build(topic, 3)
-    )))
-        .when(this.consumerFactory)
-        .create(eq(consumerConfig));
-
-    // act
-    this.consumerFactory.consume(consumerConfig);
-
-    // assert
-
-    final ArgumentCaptor<List<PartitionInfo>> argumentCaptor = ArgumentCaptor.forClass(List.class);
-    verify(this.threadConsumer, times(2)).start(argumentCaptor.capture());
-    final List<List<PartitionInfo>> partitions = argumentCaptor.getAllValues();
-    assertEquals(2, partitions.size());
-
-    final List<PartitionInfo> firstConsumerPartitions = partitions.get(0);
-    assertEquals(1, firstConsumerPartitions.size());
-    assertEquals(1, firstConsumerPartitions.get(0)
-        .partition());
-
-    final List<PartitionInfo> secondConsumerPartitions = partitions.get(1);
-    assertEquals(2, secondConsumerPartitions.size());
-    assertEquals(2, secondConsumerPartitions.get(0)
-        .partition());
-    assertEquals(3, secondConsumerPartitions.get(1)
-        .partition());
-  }
-
-  @Test
-  void mustCreateThreeConsumersWithOnePartitionEach() {
-    // arrange
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
-        .<String, byte[]>builder()
-        .consumers(3)
-        .build();
-    final String topic = "fruit_topic";
-
-    doReturn(this.threadConsumer).when(this.consumerFactory)
-        .getInstance(any(), any());
-
-    doReturn(ConsumerTemplates.build(topic, Arrays.asList(
-        PartitionInfoTemplates.build(topic, 1),
-        PartitionInfoTemplates.build(topic, 2),
-        PartitionInfoTemplates.build(topic, 3)
-    )))
-        .when(this.consumerFactory)
-        .create(eq(consumerConfig));
-
-    // act
-    this.consumerFactory.consume(consumerConfig);
-
-    // assert
-
-    final ArgumentCaptor<List<PartitionInfo>> argumentCaptor = ArgumentCaptor.forClass(List.class);
-    verify(this.threadConsumer, times(3)).start(argumentCaptor.capture());
-    final List<List<PartitionInfo>> partitions = argumentCaptor.getAllValues();
-    assertEquals(3, partitions.size());
-
-    final List<PartitionInfo> firstConsumerPartitions = partitions.get(0);
-    assertEquals(1, firstConsumerPartitions.size());
-    assertEquals(1, firstConsumerPartitions.get(0)
-        .partition());
-
-    final List<PartitionInfo> secondConsumerPartitions = partitions.get(1);
-    assertEquals(1, secondConsumerPartitions.size());
-    assertEquals(2, secondConsumerPartitions.get(0).partition());
-
-    final List<PartitionInfo> thirdConsumerPartitions = partitions.get(2);
-    assertEquals(1, thirdConsumerPartitions.size());
-    assertEquals(3, thirdConsumerPartitions.get(0).partition());
-  }
 }

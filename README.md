@@ -24,8 +24,8 @@ compile 'com.mageddo.kafka-client:kafka-client:1.0.0'
 Consumers.<String, String>builder()
 .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
 .prop(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
-.topics("stocks.changed")
 .prop(GROUP_ID_CONFIG, "stocks")
+.topics("stock_changed")
 .recoverCallback(ctx -> {
   // here you can send the message to another topic, send a SMS, etc.
   log.info("status=recovering, value={}", ctx.record().value());

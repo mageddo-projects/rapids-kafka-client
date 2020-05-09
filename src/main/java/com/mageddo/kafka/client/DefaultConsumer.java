@@ -2,18 +2,15 @@ package com.mageddo.kafka.client;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
-import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,21 +26,16 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
   protected abstract Consumers<K, V> consumerConfig();
 
   @Override
-  public void start(final List<PartitionInfo> partitions) {
+  public void start() {
     if(started.get()){
-      log.warn("status=already-started, partitions={}", partitions);
+      log.warn("status=already-started");
       return ;
     }
     final Consumer<K, V> consumer = consumer();
     this.executor = Executors.newSingleThreadExecutor();
     executor.submit(() -> {
-      log.info("status=consumer-starting, partitions-size={}, partitions={}", partitions.size(), partitions);
-      consumer.assign(
-          partitions
-              .stream()
-              .map(it -> new TopicPartition(it.topic(), it.partition()))
-              .collect(Collectors.toList())
-      );
+      log.info("status=consumer-starting");
+      consumer.subscribe(consumerConfig().topics());
       this.poll(consumer, consumerConfig());
     });
     started.set(true);

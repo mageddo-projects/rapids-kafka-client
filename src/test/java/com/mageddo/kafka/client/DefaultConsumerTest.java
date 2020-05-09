@@ -1,7 +1,6 @@
 package com.mageddo.kafka.client;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -30,8 +29,8 @@ class DefaultConsumerTest {
     final DefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build());
 
     // act
-    consumer.start(Collections.EMPTY_LIST);
-    consumer.start(Collections.EMPTY_LIST);
+    consumer.start();
+    consumer.start();
 
     // assert
     verify(consumer).consumer();

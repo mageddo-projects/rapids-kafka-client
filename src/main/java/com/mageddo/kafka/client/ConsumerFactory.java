@@ -2,14 +2,10 @@ package com.mageddo.kafka.client;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.PartitionInfo;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -39,36 +35,11 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     }
     this.checkReasonablePollInterval(consumerConfig);
 
-    final Consumer<K, V> firstConsumer = create(consumerConfig);
-    final Deque<PartitionInfo> partitions = new LinkedList<>(getAllPartitions(firstConsumer, consumerConfig.topics()));
-    final int partitionsByConsumer = calcPartitionsByConsumer(consumerConfig, partitions.size());
-
-    int startedConsumers = 1;
     for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
-
-      final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, partitionsByConsumer);
-      if (consumerPartitions.isEmpty()) {
-        log.info("status=no-consumerPartitions-left, there will be idle consumers");
-        break;
-      }
-      final Consumer<K, V> consumer = create(consumerConfig);
-      final ThreadConsumer<K, V> threadConsumer = getInstance(consumer, consumerConfig);
-      threadConsumer.start(consumerPartitions);
-
-      startedConsumers++;
+      final ThreadConsumer<K, V> consumer = getInstance(create(consumerConfig), consumerConfig);
+      consumer.start();
     }
-    final List<PartitionInfo> consumerPartitions = popConsumerPartitions(partitions, Integer.MAX_VALUE);
-    if (consumerPartitions.isEmpty()) {
-      log.debug("status=no-consumer-partitions-left-for-first-consumer");
-      return;
-    }
-    final ThreadConsumer<K, V> threadConsumer = getInstance(firstConsumer, consumerConfig);
-    threadConsumer.start(consumerPartitions);
-    log.info("status={} consumers started", startedConsumers);
-  }
-
-  private int calcPartitionsByConsumer(Consumers<K, V> consumerConfig, int partitions) {
-    return Math.max(1, partitions / consumerConfig.consumers());
+    log.info("status={} consumers started", consumerConfig.consumers());
   }
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, Consumers<K, V> consumerConfig) {
@@ -81,23 +52,6 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
   private ThreadConsumer<K, V> bindInstance(ThreadConsumer<K, V> consumer) {
     this.consumers.add(consumer);
     return consumer;
-  }
-
-  private List<PartitionInfo> popConsumerPartitions(Deque<PartitionInfo> stack, int quantity) {
-    final List<PartitionInfo> partitions = new ArrayList<>();
-    final int count = Math.min(quantity, stack.size());
-    for (int i = 0; i < count; i++) {
-      partitions.add(stack.pop());
-    }
-    return partitions;
-  }
-
-  private List<PartitionInfo> getAllPartitions(Consumer<K, V> consumer, Collection<String> topics) {
-    final List<PartitionInfo> partitions = new ArrayList<>();
-    for (final String topic : topics) {
-      partitions.addAll(consumer.partitionsFor(topic));
-    }
-    return partitions;
   }
 
   Consumer<K, V> create(Consumers<K, V> consumerConfig) {

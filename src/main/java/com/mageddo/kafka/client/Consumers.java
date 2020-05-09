@@ -10,6 +10,7 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.SneakyThrows;
 import lombok.Value;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
@@ -170,6 +171,14 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     );
   }
 
+  /**
+   * wait for the all other threads terminate
+   */
+  @SneakyThrows
+  public static void waitFor() {
+    Thread.currentThread().join();
+  }
+
   @Slf4j
   public static class ConsumersBuilder<K, V> {
 
@@ -225,6 +234,5 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
           this.consumerSupplier
       );
     }
-
   }
 }
