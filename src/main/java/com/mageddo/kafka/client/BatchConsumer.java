@@ -50,7 +50,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
         this.consumers
             .batchCallback()
             .accept(
-                DefaultContext
+                DefaultCallbackContext
                     .<K, V>builder()
                     .consumer(this.consumer)
                     .records(records)

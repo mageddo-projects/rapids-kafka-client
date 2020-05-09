@@ -4,7 +4,7 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
-public interface Context<K, V> {
+public interface CallbackContext<K, V> {
   /**
    * The kafka's client library used Consumer
    */

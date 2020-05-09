@@ -51,7 +51,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
               this.consumers
                   .callback()
                   .accept(
-                      DefaultContext
+                      DefaultCallbackContext
                           .<K, V>builder()
                           .consumer(this.consumer)
                           .records(records)

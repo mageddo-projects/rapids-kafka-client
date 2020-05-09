@@ -12,7 +12,7 @@ import lombok.experimental.Accessors;
 @Value
 @Builder
 @Accessors(fluent = true)
-public class DefaultContext<K, V> implements Context<K, V> {
+public class DefaultCallbackContext<K, V> implements CallbackContext<K, V> {
   @NonNull
   private Consumer<K, V> consumer;
 
