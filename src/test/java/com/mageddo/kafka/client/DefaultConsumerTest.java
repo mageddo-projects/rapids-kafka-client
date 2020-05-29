@@ -77,6 +77,7 @@ class DefaultConsumerTest {
     consumer.close();
 
     // assert
+    assertTrue(consumer.isClosed());
     assertTrue(consumer.isStopped());
   }
 

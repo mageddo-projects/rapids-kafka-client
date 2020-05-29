@@ -20,6 +20,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
 
   private AtomicBoolean started = new AtomicBoolean();
   private Thread executor;
+  private boolean closed;
   private boolean stopped;
 
   protected abstract void consume(ConsumerRecords<K, V> records);
@@ -36,8 +37,6 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     }
     final Consumer<K, V> consumer = consumer();
     this.executor = new Thread(() -> {
-      log.info("status=consumer-starting");
-      consumer.subscribe(consumerConfig().topics());
       this.poll(consumer, consumerConfig());
     });
     this.executor.start();
@@ -45,11 +44,13 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
   }
 
   public void poll(Consumer<K, V> consumer, ConsumingConfig<K, V> consumingConfig) {
+    log.info("status=consumer-starting, id={}", this.id());
+    consumer.subscribe(consumerConfig().topics());
     if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
       throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
     }
     try {
-      while (!Thread.currentThread().isInterrupted()) {
+      while (this.mustRun()) {
         final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.pollTimeout());
         if (log.isTraceEnabled()) {
           log.trace("status=polled, records={}", records.count());
@@ -59,12 +60,19 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
           this.sleep(consumingConfig.pollInterval());
         }
       }
-      consumer.unsubscribe();
-      consumer.close(Duration.ofSeconds(3));
-      log.debug("status=kafka-consumer-released, id={}", this.id());
-    } catch (InterruptException e) {}
+    } catch (Exception e){
+      log.warn("consumer-failed, id={}", this.id(), e);
+    } finally {
+      try {
+        consumer.close();
+      } catch (InterruptException e){}
+    }
     log.debug("status=consumer-stopped, id={}", this.id());
     this.stopped = true;
+  }
+
+  protected boolean mustRun() {
+    return !this.isClosed() && !Thread.currentThread().isInterrupted();
   }
 
   /**
@@ -99,14 +107,17 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
   @SneakyThrows
   @Override
   public void close() {
+    if(this.isClosed()){
+      log.warn("status=already-closed, id={}", this.id());
+      return ;
+    }
     log.debug("status=closing, id={}", this.id());
-    this.executor.interrupt();
-    while (this.executor.isAlive()) {
+    this.closed = true;
+    while (!this.isStopped()) {
       Thread.sleep(this.consumerConfig()
           .pollInterval()
           .toMillis());
     }
-    log.info("status=closed, id={}", this.id());
   }
 
   @Override
@@ -114,27 +125,8 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     return String.format("%d-%s", this.executor.getId(), this.executor.getName());
   }
 
-  public static void main(String[] args) {
-    final Thread t = new Thread(() -> {
-      while (true) {
-        System.out.println("hi!");
-        try {
-          Thread.sleep(1000);
-        } catch (InterruptedException e) {
-          break;
-        }
-      }
-    });
-    t.start();
-    t.interrupt();
-
-    while (true) {
-      System.out.println(t.isAlive());
-      try {
-        Thread.sleep(1000);
-      } catch (InterruptedException e) {
-      }
-    }
+  public boolean isClosed() {
+    return closed;
   }
 
   public boolean isStopped() {
