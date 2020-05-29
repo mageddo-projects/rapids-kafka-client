@@ -59,7 +59,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
       }
     }
     consumer.unsubscribe();
-    consumer.close();
+    consumer.close(Duration.ofSeconds(3));
     log.info("status=consumer-stopped, {}", Thread.currentThread().getName());
   }
 
