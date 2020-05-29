@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -19,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, AutoCloseable {
 
   private AtomicBoolean started = new AtomicBoolean();
+
+  private Future<?> future;
   private ExecutorService executor;
 
   protected abstract void consume(ConsumerRecords<K, V> records);
@@ -33,7 +36,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     }
     final Consumer<K, V> consumer = consumer();
     this.executor = Executors.newSingleThreadExecutor();
-    executor.submit(() -> {
+    this.future = executor.submit(() -> {
       log.info("status=consumer-starting");
       consumer.subscribe(consumerConfig().topics());
       this.poll(consumer, consumerConfig());
@@ -55,6 +58,9 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
         this.sleep(consumingConfig.pollInterval());
       }
     }
+    consumer.unsubscribe();
+    consumer.close();
+    log.info("status=consumer-stopped, {}", Thread.currentThread().getName());
   }
 
   /**
@@ -69,7 +75,6 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
           .interrupt();
     }
   }
-
 
   void commitSyncRecord(Consumer<K, V> consumer, ConsumerRecord<K, V> record) {
     consumer.commitSync(Collections.singletonMap(
@@ -89,6 +94,12 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
 
   @Override
   public void close() {
-    this.executor.shutdownNow();
+    log.info("status=consumer-stopping, {}", Thread.currentThread().getName());
+    this.future.cancel(true);
+    this.executor.shutdown();
+  }
+
+  protected ExecutorService getExecutor() {
+    return executor;
   }
 }
