@@ -93,7 +93,8 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    if(closed){
+    if(this.closed){
+      log.warn("status=already-closed");
       return ;
     }
     for (ThreadConsumer<K, V> consumer : this.consumers) {

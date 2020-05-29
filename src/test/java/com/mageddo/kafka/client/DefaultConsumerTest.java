@@ -23,7 +23,7 @@ class DefaultConsumerTest {
 
 
   @Test
-  void cantStartTwitch() {
+  void cantStartTwice() {
 
     // arrange
     final DefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build());
@@ -59,6 +59,26 @@ class DefaultConsumerTest {
     executor.awaitTermination(5, TimeUnit.SECONDS);
     assertTrue(executor.isShutdown());
     assertTrue(executor.isTerminated());
+  }
+
+  @Test
+  @SneakyThrows
+  void mustStopConsumeAfterInterruptTheThread2() {
+
+    // arrange
+    final String topic = "fruit_topic";
+    final MockedDefaultConsumer<String, byte[]> consumer = spy(DefaultConsumerTemplates.build(
+        topic,
+        PartitionInfoTemplates.build(topic)
+    ));
+
+    // act
+    consumer.start();
+    consumer.close();
+
+    // assert
+    assertTrue(consumer.isClosed());
+    assertTrue(consumer.isStopped());
   }
 
   @Test

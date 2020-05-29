@@ -1,5 +1,6 @@
 package templates;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,19 +15,20 @@ import org.apache.kafka.common.PartitionInfo;
 public class DefaultConsumerTemplates {
   public static class MockedDefaultConsumer<K, V> extends DefaultConsumer<K, V> {
 
+    private String topic;
     private MockConsumer<K, V> consumer = new MockConsumer<>(OffsetResetStrategy.LATEST);
 
     public MockedDefaultConsumer() {
     }
 
     public MockedDefaultConsumer(String topic, List<PartitionInfo> partitionsInfo) {
+      this.topic = topic;
       this.consumer().updatePartitions(topic, partitionsInfo);
       this.consumer().scheduleNopPollTask();
     }
 
     @Override
-    public void consume(
-        ConsumerRecords<K, V> records) {
+    public void consume(ConsumerRecords<K, V> records) {
     }
 
     @Override
@@ -36,7 +38,12 @@ public class DefaultConsumerTemplates {
 
     @Override
     protected Consumers<K, V> consumerConfig() {
-      return null;
+      return Consumers
+          .<K, V>builder()
+          .topics(this.topic)
+          .callback((callbackContext, record) -> {})
+          .pollInterval(Duration.ofMillis(500))
+          .build();
     }
 
   }

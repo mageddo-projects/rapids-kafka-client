@@ -2,8 +2,6 @@ package com.mageddo.kafka.client;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -12,49 +10,69 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
+import org.apache.kafka.common.errors.InterruptException;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, AutoCloseable {
 
   private AtomicBoolean started = new AtomicBoolean();
-  private ExecutorService executor;
+  private Thread executor;
+  private boolean closed;
+  private boolean stopped;
 
   protected abstract void consume(ConsumerRecords<K, V> records);
+
   protected abstract Consumer<K, V> consumer();
+
   protected abstract Consumers<K, V> consumerConfig();
 
   @Override
   public void start() {
-    if(started.get()){
+    if (started.get()) {
       log.warn("status=already-started");
-      return ;
+      return;
     }
     final Consumer<K, V> consumer = consumer();
-    this.executor = Executors.newSingleThreadExecutor();
-    executor.submit(() -> {
-      log.info("status=consumer-starting");
-      consumer.subscribe(consumerConfig().topics());
+    this.executor = new Thread(() -> {
       this.poll(consumer, consumerConfig());
     });
+    this.executor.start();
     started.set(true);
   }
 
   public void poll(Consumer<K, V> consumer, ConsumingConfig<K, V> consumingConfig) {
+    log.info("status=consumer-starting, id={}", this.id());
+    consumer.subscribe(consumerConfig().topics());
     if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
       throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
     }
-    while (!Thread.currentThread().isInterrupted()) {
-      final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.pollTimeout());
-      if (log.isTraceEnabled()) {
-        log.trace("status=polled, records={}", records.count());
+    try {
+      while (this.mustRun()) {
+        final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.pollTimeout());
+        if (log.isTraceEnabled()) {
+          log.trace("status=polled, records={}", records.count());
+        }
+        this.consume(records);
+        if (!Duration.ZERO.equals(consumingConfig.pollInterval())) {
+          this.sleep(consumingConfig.pollInterval());
+        }
       }
-      this.consume(records);
-      if(!Duration.ZERO.equals(consumingConfig.pollInterval())){
-        this.sleep(consumingConfig.pollInterval());
-      }
+    } catch (Exception e){
+      log.warn("consumer-failed, id={}", this.id(), e);
+    } finally {
+      try {
+        consumer.close();
+      } catch (InterruptException e){}
     }
+    log.debug("status=consumer-stopped, id={}", this.id());
+    this.stopped = true;
+  }
+
+  protected boolean mustRun() {
+    return !this.isClosed() && !Thread.currentThread().isInterrupted();
   }
 
   /**
@@ -69,7 +87,6 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
           .interrupt();
     }
   }
-
 
   void commitSyncRecord(Consumer<K, V> consumer, ConsumerRecord<K, V> record) {
     consumer.commitSync(Collections.singletonMap(
@@ -87,8 +104,32 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
     }
   }
 
+  @SneakyThrows
   @Override
   public void close() {
-    this.executor.shutdownNow();
+    if(this.isClosed()){
+      log.warn("status=already-closed, id={}", this.id());
+      return ;
+    }
+    log.debug("status=closing, id={}", this.id());
+    this.closed = true;
+    while (!this.isStopped()) {
+      Thread.sleep(this.consumerConfig()
+          .pollInterval()
+          .toMillis());
+    }
+  }
+
+  @Override
+  public String id() {
+    return String.format("%d-%s", this.executor.getId(), this.executor.getName());
+  }
+
+  public boolean isClosed() {
+    return closed;
+  }
+
+  public boolean isStopped() {
+    return stopped;
   }
 }
