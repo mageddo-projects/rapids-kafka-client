@@ -85,8 +85,12 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
   }
 
   public Map<String, Object> props() {
-    this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
-    this.prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+    if(!this.props.containsKey(ENABLE_AUTO_COMMIT_CONFIG)){
+      this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
+    }
+    if(!this.props.containsKey(BOOTSTRAP_SERVERS_CONFIG)){
+      this.prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+    }
     return Collections.unmodifiableMap(this.props);
   }
 
