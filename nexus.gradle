@@ -42,7 +42,7 @@ uploadArchives {
         name project.name
         packaging 'jar'
         description project.description
-        url "https://github.com/mageddo-projects/kafka-client"
+        url "https://github.com/mageddo-projects/rapids-kafka-client"
 
         scm {
           connection projectUrl
