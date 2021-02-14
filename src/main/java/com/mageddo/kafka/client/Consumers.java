@@ -7,21 +7,27 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.SneakyThrows;
-import lombok.Value;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
-@Value
+
+@Getter
 @Builder
 @Accessors(chain = true, fluent = true)
+@FieldDefaults(makeFinal=true, level= AccessLevel.PRIVATE)
+@EqualsAndHashCode
 @AllArgsConstructor
 public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
 
@@ -242,8 +248,12 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     }
   }
 
+  public String getGroupId(){
+    return String.valueOf(this.props.get(GROUP_ID_CONFIG));
+  }
+
   @Override
   public String toString() {
-    return String.format("Consumers(groupId=%s, topics=%s)", this.props.get(GROUP_ID_CONFIG), this.topics);
+    return String.format("Consumers(groupId=%s, topics=%s)", this.getGroupId(), this.topics);
   }
 }
