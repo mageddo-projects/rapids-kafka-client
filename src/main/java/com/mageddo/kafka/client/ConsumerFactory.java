@@ -41,13 +41,13 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     }
     this.checkReasonablePollInterval(consumerConfig);
 
-    for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
+    for (int i = 0; i < consumerConfig.consumers(); i++) {
       final ThreadConsumer<K, V> consumer = getInstance(create(consumerConfig), consumerConfig);
       consumer.start();
     }
     log.info(
         "status=consumers started, threads={}, topics={}, groupId={}",
-        consumerConfig.consumers(), consumerConfig.topics(), this.getGroupId()
+        this.consumers.size(), consumerConfig.topics(), this.getGroupId()
     );
   }
 
