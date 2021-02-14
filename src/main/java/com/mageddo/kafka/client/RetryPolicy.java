@@ -1,6 +1,7 @@
 package com.mageddo.kafka.client;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -10,7 +11,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class RetryPolicy {
 
   @Builder.Default
@@ -28,6 +29,15 @@ public class RetryPolicy {
       return Duration.ZERO;
     }
     return Duration.ofMillis(this.delay.toMillis() * maxTries);
+  }
+
+  public RetryPolicy copy(){
+    return RetryPolicy
+        .builder()
+        .delay(this.delay)
+        .maxTries(this.maxTries)
+        .retryableExceptions(new ArrayList<>(retryableExceptions))
+        .build();
   }
 
   public static class RetryPolicyBuilder {

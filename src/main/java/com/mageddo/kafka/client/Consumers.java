@@ -28,7 +28,7 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 @Getter
 @Builder
 @Accessors(chain = true, fluent = true)
-@FieldDefaults(makeFinal=true, level= AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 @AllArgsConstructor
 public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
@@ -108,7 +108,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
         .topics(new ArrayList<>(this.topics))
         .pollTimeout(this.pollTimeout)
         .pollInterval(this.pollInterval)
-        .retryPolicy(this.retryPolicy)
+        .retryPolicy(this.retryPolicy.copy())
         .recoverCallback(this.recoverCallback)
         .callback(this.callback)
         .batchCallback(this.batchCallback)
@@ -250,7 +250,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     }
   }
 
-  public String getGroupId(){
+  public String getGroupId() {
     return String.valueOf(this.props.get(GROUP_ID_CONFIG));
   }
 
