@@ -10,7 +10,6 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 @Slf4j
@@ -34,7 +33,7 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     if (consumerConfig.consumers() == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
-          this.getGroupId(),
+          this.consumerConfig.getGroupId(),
           consumerConfig.topics()
       );
       return;
@@ -47,14 +46,8 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     }
     log.info(
         "status=consumers started, threads={}, topics={}, groupId={}",
-        this.consumers.size(), consumerConfig.topics(), this.getGroupId()
+        this.consumers.size(), consumerConfig.topics(), this.consumerConfig.getGroupId()
     );
-  }
-
-  private Object getGroupId() {
-    return this.consumerConfig
-        .props()
-        .get(GROUP_ID_CONFIG);
   }
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, Consumers<K, V> consumerConfig) {
@@ -130,6 +123,6 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
 
   @Override
   public String toString() {
-    return String.format("ConsumerFactory(groupId=%s, topics=%s)", this.getGroupId(), this.consumerConfig.topics());
+    return String.format("ConsumerFactory(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(), this.consumerConfig.topics());
   }
 }

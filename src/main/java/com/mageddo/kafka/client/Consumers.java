@@ -1,9 +1,11 @@
 package com.mageddo.kafka.client;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -103,14 +105,14 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
   public ConsumersBuilder<K, V> toBuilder() {
     return new ConsumersBuilder<K, V>()
         .consumers(this.consumers)
-        .topics(this.topics)
+        .topics(new ArrayList<>(this.topics))
         .pollTimeout(this.pollTimeout)
         .pollInterval(this.pollInterval)
         .retryPolicy(this.retryPolicy)
         .recoverCallback(this.recoverCallback)
         .callback(this.callback)
         .batchCallback(this.batchCallback)
-        .props(this.props)
+        .props(new HashMap<>(this.props))
         ;
   }
 
