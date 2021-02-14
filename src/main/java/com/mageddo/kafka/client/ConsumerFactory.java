@@ -10,36 +10,44 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
-import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 @Slf4j
 public class ConsumerFactory<K, V> implements AutoCloseable {
 
   private List<ThreadConsumer<K, V>> consumers = new ArrayList<>();
+  private boolean started;
   private boolean closed;
+  private Consumers<K, V> consumerConfig;
 
   public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
     return config -> new KafkaConsumer<>(config.props());
   }
 
   public void consume(Consumers<K, V> consumerConfig) {
+    if (this.started) {
+      throw new IllegalStateException(String.format("Can't start twice: %s", consumerConfig));
+    }
+    this.started = true;
+    this.consumerConfig = consumerConfig;
     if (consumerConfig.consumers() == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
-          consumerConfig.props()
-              .get(GROUP_ID_CONFIG),
+          this.consumerConfig.getGroupId(),
           consumerConfig.topics()
       );
       return;
     }
     this.checkReasonablePollInterval(consumerConfig);
 
-    for (int i = 0; i < consumerConfig.consumers() - 1; i++) {
+    for (int i = 0; i < consumerConfig.consumers(); i++) {
       final ThreadConsumer<K, V> consumer = getInstance(create(consumerConfig), consumerConfig);
       consumer.start();
     }
-    log.info("status={} consumers started", consumerConfig.consumers());
+    log.info(
+        "status=consumers started, threads={}, topics={}, groupId={}",
+        this.consumers.size(), consumerConfig.topics(), this.consumerConfig.getGroupId()
+    );
   }
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, Consumers<K, V> consumerConfig) {
@@ -93,9 +101,9 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    if(this.closed){
-      log.warn("status=already-closed");
-      return ;
+    if (this.closed) {
+      log.warn("status=already-closed, factory={}", this.toString());
+      return;
     }
     for (ThreadConsumer<K, V> consumer : this.consumers) {
       consumer.close();
@@ -108,7 +116,13 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
    */
   @SneakyThrows
   public ConsumerFactory<K, V> waitFor() {
-    Thread.currentThread().join();
+    Thread.currentThread()
+        .join();
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("ConsumerFactory(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(), this.consumerConfig.topics());
   }
 }

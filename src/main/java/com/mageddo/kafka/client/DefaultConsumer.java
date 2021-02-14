@@ -118,6 +118,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
           .pollInterval()
           .toMillis());
     }
+    log.info("status=closed, thread={}, config={}", this.id(), this.consumerConfig());
   }
 
   @Override

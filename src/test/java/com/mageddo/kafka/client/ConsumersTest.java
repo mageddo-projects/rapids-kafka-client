@@ -30,7 +30,7 @@ class ConsumersTest {
   }
 
   @Test
-  void mustCopy(){
+  void mustCopy() {
     // arrange
     final Consumers<String, byte[]> consumerConfig = Consumers
         .<String, byte[]>builder()
@@ -39,17 +39,20 @@ class ConsumersTest {
         .build();
 
     // act
-    final Consumers<String, byte[]> copy = consumerConfig.toBuilder().build();
+    final Consumers<String, byte[]> copy = consumerConfig.toBuilder()
+        .build();
 
     // assert
-    assertEquals(consumerConfig, copy);
-    assertEquals(3, consumerConfig.props().size());
-    assertEquals(3, copy.props().size());
+    assertEquals(String.valueOf(consumerConfig), String.valueOf(copy));
+    assertEquals(3, consumerConfig.props()
+        .size());
+    assertEquals(3, copy.props()
+        .size());
     assertNotEquals(System.identityHashCode(consumerConfig), System.identityHashCode(copy));
   }
 
   @Test
-  void consumersConfigMustStayDisabled(){
+  void consumersConfigMustStayDisabled() {
     // arrange
     final Consumers<String, byte[]> consumerConfig = Consumers
         .<String, byte[]>builder()
@@ -58,12 +61,11 @@ class ConsumersTest {
         .build();
 
     // act
-    final int consumers =  consumerConfig
+    final int consumers = consumerConfig
         .toBuilder()
         .consumers(10)
         .build()
-        .consumers()
-    ;
+        .consumers();
 
     // assert
     assertEquals(Integer.MIN_VALUE, consumers);
