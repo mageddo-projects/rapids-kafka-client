@@ -85,10 +85,10 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
   }
 
   public Map<String, Object> props() {
-    if(!this.props.containsKey(ENABLE_AUTO_COMMIT_CONFIG)){
+    if (!this.props.containsKey(ENABLE_AUTO_COMMIT_CONFIG)) {
       this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
     }
-    if(!this.props.containsKey(BOOTSTRAP_SERVERS_CONFIG)){
+    if (!this.props.containsKey(BOOTSTRAP_SERVERS_CONFIG)) {
       this.prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
     }
     return Collections.unmodifiableMap(this.props);
@@ -108,7 +108,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
         ;
   }
 
-  public ConsumerFactory<K, V> consume(){
+  public ConsumerFactory<K, V> consume() {
     return this.consume(this);
   }
 
@@ -180,7 +180,8 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
    */
   @SneakyThrows
   public static void waitFor() {
-    Thread.currentThread().join();
+    Thread.currentThread()
+        .join();
   }
 
   @Slf4j
@@ -197,7 +198,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     }
 
     public ConsumersBuilder<K, V> consumers(int consumers) {
-      if(this.consumers == Integer.MIN_VALUE){
+      if (this.consumers == Integer.MIN_VALUE) {
         log.info(
             "consumer was previously disabled by set it's value to {}, it won't be re enabled. groupId={}, topics={}",
             Integer.MIN_VALUE,
@@ -209,6 +210,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
       this.consumers = consumers;
       return this;
     }
+
     public ConsumersBuilder<K, V> topics(String... topics) {
       this.topics = Arrays.asList(topics);
       return this;
@@ -238,5 +240,10 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
           this.consumerSupplier
       );
     }
+  }
+
+  @Override
+  public String toString() {
+    return String.format("Consumers(groupId=%s, topics=%s)", this.props.get(GROUP_ID_CONFIG), this.topics);
   }
 }

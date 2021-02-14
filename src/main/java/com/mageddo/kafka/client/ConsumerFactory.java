@@ -17,18 +17,24 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL
 public class ConsumerFactory<K, V> implements AutoCloseable {
 
   private List<ThreadConsumer<K, V>> consumers = new ArrayList<>();
+  private boolean started;
   private boolean closed;
+  private Consumers<K, V> consumerConfig;
 
   public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
     return config -> new KafkaConsumer<>(config.props());
   }
 
   public void consume(Consumers<K, V> consumerConfig) {
+    if (this.started) {
+      throw new IllegalStateException(String.format("Can't start twice: %s", consumerConfig));
+    }
+    this.started = true;
+    this.consumerConfig = consumerConfig;
     if (consumerConfig.consumers() == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
-          consumerConfig.props()
-              .get(GROUP_ID_CONFIG),
+          this.getGroupId(),
           consumerConfig.topics()
       );
       return;
@@ -39,7 +45,16 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
       final ThreadConsumer<K, V> consumer = getInstance(create(consumerConfig), consumerConfig);
       consumer.start();
     }
-    log.info("status={} consumers started", consumerConfig.consumers());
+    log.info(
+        "status=consumers started, threads={}, topics={}, groupId={}",
+        consumerConfig.consumers(), consumerConfig.topics(), this.getGroupId()
+    );
+  }
+
+  private Object getGroupId() {
+    return this.consumerConfig
+        .props()
+        .get(GROUP_ID_CONFIG);
   }
 
   ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, Consumers<K, V> consumerConfig) {
@@ -93,9 +108,9 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    if(this.closed){
-      log.warn("status=already-closed");
-      return ;
+    if (this.closed) {
+      log.warn("status=already-closed, factory={}", this.toString());
+      return;
     }
     for (ThreadConsumer<K, V> consumer : this.consumers) {
       consumer.close();
@@ -108,7 +123,13 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
    */
   @SneakyThrows
   public ConsumerFactory<K, V> waitFor() {
-    Thread.currentThread().join();
+    Thread.currentThread()
+        .join();
     return this;
+  }
+
+  @Override
+  public String toString() {
+    return String.format("ConsumerFactory(groupId=%s, topics=%s)", this.getGroupId(), this.consumerConfig.topics());
   }
 }
