@@ -27,7 +27,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
 
   protected abstract Consumer<K, V> consumer();
 
-  protected abstract ConsumerConfigDefault<K, V> consumerConfig();
+  protected abstract ConsumerConfig<K, V> consumerConfig();
 
   @Override
   public void start() {

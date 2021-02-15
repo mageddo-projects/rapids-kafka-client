@@ -21,7 +21,6 @@ public class ConsumerConfigTemplates {
         .batchCallback((ctx, records) -> System.out.println("batch callback"))
         .callback((ctx, record) -> System.out.println("callback"))
         .consumers(3)
-        .pollInterval(Duration.ofMillis(1000 / 3))
         .retryPolicy(RetryPolicy
             .builder()
             .maxTries(2)
@@ -30,6 +29,7 @@ public class ConsumerConfigTemplates {
         )
         .recoverCallback((ctx) -> System.out.println("recover callback"))
         .topics(Collections.singleton("fruit_topic"))
+        .pollInterval(Duration.ofMillis(1000 / 3))
         .pollTimeout(Duration.ofMillis(100))
         ;
   }

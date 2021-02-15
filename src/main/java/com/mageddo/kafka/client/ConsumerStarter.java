@@ -11,6 +11,9 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.mageddo.kafka.client.ConsumerConfigDefault.CONSUMERS_NOT_SET;
+import static com.mageddo.kafka.client.internal.ObjectsUtils.firstNonNull;
+
 /**
  * This class make it easy to set default configs and create many consumers,
  * also states that consumers and make it easy to stop them later.
@@ -89,8 +92,7 @@ public class ConsumerStarter {
     }
     this.started = true;
     for (final ConsumerConfig config : consumers) {
-      this.factories.add(this.buildConsumer(config)
-          .consume());
+      this.factories.add(this.start(this.buildConsumer(config)));
     }
     return this;
   }
@@ -129,6 +131,10 @@ public class ConsumerStarter {
     }
   }
 
+  public void waitFor(){
+    ConsumerConfigDefault.waitFor();
+  }
+
   private ConsumerConfigDefault<?, ?> buildConsumer(ConsumerConfig<?, ?> config) {
     final ConsumerConfigDefault.Builder builder = ConsumerConfigDefault.builderOf(this.config);
     config
@@ -136,20 +142,23 @@ public class ConsumerStarter {
         .forEach(builder::prop)
     ;
     return builder
-        .callback(config.callback())
-        .batchCallback(config.batchCallback())
-        .topics(config.topics())
-        .consumers(config.consumers())
-        .recoverCallback(config.recoverCallback())
-        .retryPolicy(config.retryPolicy())
-        .consumerSupplier(config.consumerSupplier())
-        .pollInterval(config.pollInterval())
-        .pollTimeout(config.pollTimeout())
+        .callback(firstNonNull(config.callback(), this.config.callback()))
+        .batchCallback(firstNonNull(config.batchCallback(), this.config.batchCallback()))
+        .topics(config.topics().isEmpty() ? this.config.topics() : config.topics())
+        .consumers(config.consumers() != CONSUMERS_NOT_SET ? config.consumers() : this.config.consumers())
+        .recoverCallback(firstNonNull(config.recoverCallback(), this.config.recoverCallback()))
+        .retryPolicy(firstNonNull(config.retryPolicy(), this.config.retryPolicy()))
+        .consumerSupplier(firstNonNull(config.consumerSupplier(), this.config.consumerSupplier()))
+        .pollInterval(firstNonNull(config.pollInterval(), this.config.pollInterval()))
+        .pollTimeout(firstNonNull(config.pollTimeout(), this.config.pollTimeout()))
         .build()
         ;
   }
 
-  public void waitFor(){
-    ConsumerConfigDefault.waitFor();
+  ConsumerController<?, ?> start(ConsumerConfig<?, ?> consumerConfig) {
+    final ConsumerController consumerController = new ConsumerController<>();
+    consumerController.consume(consumerConfig);
+    return consumerController;
   }
+
 }

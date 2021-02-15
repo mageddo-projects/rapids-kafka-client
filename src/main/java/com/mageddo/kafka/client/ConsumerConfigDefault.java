@@ -20,8 +20,6 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
-import static org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG;
-import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 
@@ -32,6 +30,8 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 @EqualsAndHashCode
 @AllArgsConstructor
 public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
+
+  public static final int CONSUMERS_NOT_SET = -42;
 
   /**
    * @see ConsumerCreateConfig#props()
@@ -52,19 +52,16 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
   /**
    * @see ConsumingConfig#pollTimeout()
    */
-  @NonNull
   private Duration pollTimeout;
 
   /**
    * @see ConsumingConfig#pollInterval()
    */
-  @NonNull
   private Duration pollInterval;
 
   /**
    * @see ConsumingConfig#retryPolicy()
    */
-  @NonNull
   private RetryPolicy retryPolicy;
 
   /**
@@ -87,11 +84,11 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
    */
   private ConsumerSupplier<K, V> consumerSupplier;
 
-  public static Builder builderOf(ConsumerConfig<?, ?> config) {
-    if(config instanceof ConsumerConfigDefault){
-      return ((ConsumerConfigDefault) config).toBuilder();
+  public String groupId() {
+    if (this.props.containsKey(GROUP_ID_CONFIG)) {
+      return String.valueOf(this.props.get(GROUP_ID_CONFIG));
     }
-    throw new UnsupportedOperationException("Until this moment, only ConsumerConfigDefault is supported");
+    return null;
   }
 
   public ConsumerConfigDefault<K, V> prop(String k, Object v) {
@@ -100,12 +97,6 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
   }
 
   public Map<String, Object> props() {
-    if (!this.props.containsKey(ENABLE_AUTO_COMMIT_CONFIG)) {
-      this.prop(ENABLE_AUTO_COMMIT_CONFIG, false);
-    }
-    if (!this.props.containsKey(BOOTSTRAP_SERVERS_CONFIG)) {
-      this.prop(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-    }
     return Collections.unmodifiableMap(this.props);
   }
 
@@ -115,7 +106,7 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
         .topics(new ArrayList<>(this.topics))
         .pollTimeout(this.pollTimeout)
         .pollInterval(this.pollInterval)
-        .retryPolicy(this.retryPolicy.copy())
+        .retryPolicy(this.retryPolicy != null ? this.retryPolicy.copy() : null)
         .recoverCallback(this.recoverCallback)
         .callback(this.callback)
         .batchCallback(this.batchCallback)
@@ -137,7 +128,8 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
     return this.consume(consumeCallback, null);
   }
 
-  public ConsumerController<K, V> consume(ConsumeCallback<K, V> consumeCallback, RecoverCallback<K, V> recoverCallback) {
+  public ConsumerController<K, V> consume(ConsumeCallback<K, V> consumeCallback,
+      RecoverCallback<K, V> recoverCallback) {
     return this.consume(this
         .toBuilder()
         .callback(consumeCallback)
@@ -199,17 +191,24 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
         .join();
   }
 
+  public static Builder builderOf(ConsumerConfig<?, ?> config) {
+    if (config instanceof ConsumerConfigDefault) {
+      return ((ConsumerConfigDefault) config).toBuilder();
+    }
+    throw new UnsupportedOperationException("Until this moment, only ConsumerConfigDefault is supported");
+  }
+
   @Slf4j
   public static class Builder<K, V> {
 
     public Builder() {
       this.props = new LinkedHashMap<>();
-      this.consumers = 1;
-      this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
-      this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
-      this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+      this.consumers = CONSUMERS_NOT_SET;
       this.topics = Collections.EMPTY_LIST;
-      this.consumerSupplier = ConsumerController.defaultConsumerSupplier();
+//      this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
+//      this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
+//      this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+//      this.consumerSupplier = ConsumerController.defaultConsumerSupplier();
     }
 
     public Builder<K, V> consumers(int consumers) {
@@ -257,12 +256,8 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
     }
   }
 
-  public String getGroupId() {
-    return String.valueOf(this.props.get(GROUP_ID_CONFIG));
-  }
-
   @Override
   public String toString() {
-    return String.format("ConsumerConfig(groupId=%s, topics=%s)", this.getGroupId(), this.topics);
+    return String.format("ConsumerConfig(groupId=%s, topics=%s)", this.groupId(), this.topics);
   }
 }
