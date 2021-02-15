@@ -3,6 +3,7 @@ package com.mageddo.kafka.client;
 import java.time.Duration;
 import java.util.Collections;
 
+import org.apache.kafka.common.config.ConfigException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -11,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import templates.ConsumerConfigTemplates;
 import templates.ConsumerTemplates;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -101,7 +103,22 @@ class ConsumerControllerTest {
     // assert
     this.consumerController.consume(consumerConfig);
 
+  }
 
+  @Test
+  void mustUseDefaultConsumerSupplierWhenItsNotSet(){
+    // arrange
+    final var topic = "fruit_topic";
+    final var consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+        .toBuilder()
+        .consumers(1)
+        .consumerSupplier(null)
+        .build();
+
+    // act
+    assertThrows(ConfigException.class, () -> this.consumerController.create(consumerConfig));
+
+    // assert
   }
 
 }

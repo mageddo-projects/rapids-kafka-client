@@ -93,7 +93,11 @@ public class ConsumerController<K, V> implements AutoCloseable {
   }
 
   Consumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
-    return consumerConfig.consumerSupplier()
+    return ObjectsUtils
+        .firstNonNull(
+            consumerConfig.consumerSupplier(),
+            ConsumerController.<K, V>defaultConsumerSupplier()
+        )
         .get(consumerConfig);
   }
 
