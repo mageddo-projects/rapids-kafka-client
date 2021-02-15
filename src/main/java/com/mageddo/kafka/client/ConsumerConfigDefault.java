@@ -229,10 +229,6 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
       this.props = new LinkedHashMap<>();
       this.consumers = CONSUMERS_NOT_SET;
       this.topics = Collections.EMPTY_LIST;
-//      this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
-//      this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
-//      this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
-//      this.consumerSupplier = ConsumerController.defaultConsumerSupplier();
     }
 
     public Builder<K, V> consumers(int consumers) {
