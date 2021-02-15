@@ -23,7 +23,7 @@ compile("com.mageddo.rapids-kafka-client:rapids-kafka-client:1.0.3")
 ```
 
 ```java
-Consumers.<String, String>builder()
+ConsumerConfig.<String, String>builder()
 .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
 .prop(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
 .prop(GROUP_ID_CONFIG, "stocks")
@@ -38,6 +38,46 @@ Consumers.<String, String>builder()
 .build()
 .consume()
 .waitFor();
+```
+
+## Making it easy to configure many consumers
+
+```java
+public static void main(String[] args) {
+  final ConsumerStarter consumerStarter = ConsumerStarter.start(defaultConfig(), Arrays.asList(
+      new StockConsumer() // and many other consumers
+  ));
+  consumerStarter.waitFor();
+  //    consumerStarter.stop();
+}
+
+static ConsumerConfig defaultConfig() {
+  return ConsumerConfig.builder()
+    .prop(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+    .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+    .prop(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+    .prop(GROUP_ID_CONFIG, "my-group-id")
+    .build();
+}
+
+static class StockConsumer implements Consumer {
+
+  ConsumeCallback<String, String> consume() {
+    return (callbackContext, record) -> {
+      System.out.printf("message from kafka: %s\n", record.value());
+    };
+  }
+
+  @Override
+  public ConsumerConfig<String, String> config() {
+    return ConsumerConfig
+      .<String, String>builder()
+      .topics("stocks_events")
+      .consumers(1)
+      .callback(this.consume())
+      .build();
+  }
+}
 ```
 
 # Examples

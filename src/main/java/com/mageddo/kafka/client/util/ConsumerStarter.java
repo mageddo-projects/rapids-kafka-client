@@ -156,5 +156,4 @@ public class ConsumerStarter {
   public void waitFor(){
     ConsumerConfigDefault.waitFor();
   }
-
 }
