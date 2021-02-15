@@ -4,15 +4,15 @@ package com.mageddo.kafka.client;
  * Definition to create a Kafka Consumer, you can create your first consumer starting here, see an example below
  *
  * <pre>
- * ConsumerConfig.<String, String>builder()
+ * ConsumerConfig.&#x3C;String, String&#x3E;builder()
  * .topics("stock_changed")
  * .prop(GROUP_ID_CONFIG, "stocks")
  * .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
  * .prop(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
- * .callback((ctx, record) -> {
+ * .callback((ctx, record) -&#x3E; {
  *   log.info("status=consumed, value={}", record.value());
  * })
- * .recoverCallback(ctx -> {
+ * .recoverCallback(ctx -&#x3E; {
  *   // here you can send the message to another topic, send a SMS, etc.
  *   log.info("status=recovering, value={}", ctx.record().value());
  * })

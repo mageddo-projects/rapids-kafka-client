@@ -15,6 +15,47 @@ import com.mageddo.kafka.client.ConsumerController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * This class make it easy to set default configs and create many consumers,
+ * also states that consumers and make it easy to stop them later.
+ *
+ * <pre>
+ *  public static void main(String[] args) {
+ *   final ConsumerStarter consumerStarter = ConsumerStarter.start(defaultConfig(), Arrays.asList(
+ *       new StockConsumer() // and many other consumers
+ *   ));
+ *   consumerStarter.waitFor();
+ * //    consumerStarter.stop();
+ * }
+ *
+ * static ConsumerConfig defaultConfig() {
+ *   return ConsumerConfig.builder()
+ *       .prop(CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG, &#x22;localhost:9092&#x22;)
+ *       .prop(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+ *       .prop(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName())
+ *       .prop(GROUP_ID_CONFIG, &#x22;my-group-id&#x22;)
+ *       .build();
+ * }
+ *
+ * static class StockConsumer implements Consumer {
+ *
+ *   ConsumeCallback&#x3C;String, String&#x3E; consume() {
+ *     return (callbackContext, record) -&#x3E; {
+ *       System.out.printf(&#x22;message from kafka: %s\n&#x22;, record.value());
+ *     };
+ *   }
+ *
+ *   public ConsumerConfig&#x3C;String, String&#x3E; config() {
+ *     return ConsumerConfig
+ *         .&#x3C;String, String&#x3E;builder()
+ *         .topics(&#x22;stocks_events&#x22;)
+ *         .consumers(1)
+ *         .callback(this.consume())
+ *         .build();
+ *   }
+ * }
+ * </pre>
+ */
 public class ConsumerStarter {
 
   private static final Logger log = LoggerFactory.getLogger(ConsumerStarter.class);
@@ -27,6 +68,14 @@ public class ConsumerStarter {
   public ConsumerStarter(ConsumerConfig<?, ?> config) {
     this.config = config;
     this.factories = new ArrayList<>();
+  }
+
+  public static ConsumerStarter startFromConfig(ConsumerConfig<?, ?> config, List<ConsumerConfig> configs) {
+    return new ConsumerStarter(config).startFromConfig(configs);
+  }
+
+  public static ConsumerStarter start(ConsumerConfig<?, ?> config, List<Consumer> consumers) {
+    return new ConsumerStarter(config).start(consumers);
   }
 
   public ConsumerStarter start(List<Consumer> consumers) {
@@ -48,14 +97,6 @@ public class ConsumerStarter {
           .consume());
     }
     return this;
-  }
-
-  public static ConsumerStarter startFromConfig(ConsumerConfig<?, ?> config, List<ConsumerConfig> configs) {
-    return new ConsumerStarter(config).startFromConfig(configs);
-  }
-
-  public static ConsumerStarter start(ConsumerConfig<?, ?> config, List<Consumer> consumers) {
-    return new ConsumerStarter(config).start(consumers);
   }
 
   public void stop() {
@@ -111,4 +152,9 @@ public class ConsumerStarter {
         .build()
         ;
   }
+
+  public void waitFor(){
+    ConsumerConfigDefault.waitFor();
+  }
+
 }
