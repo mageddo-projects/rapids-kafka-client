@@ -37,7 +37,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
   @Override
   public void start() {
     if (started.get()) {
-      log.warn("status=already-started");
+      log.warn("status=already-started, thread={}, config={}", this.id(), this.consumerConfig());
       return;
     }
     final Consumer<K, V> consumer = consumer();
@@ -49,12 +49,15 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
   }
 
   public void poll(Consumer<K, V> consumer, ConsumingConfig<K, V> consumingConfig) {
-    log.info("status=consumer-starting, id={}", this.id());
-    consumer.subscribe(consumerConfig().topics());
-    if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
-      throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
-    }
     try {
+
+      log.debug("status=consumer-thread-starting, id={}", this.id());
+      consumer.subscribe(consumerConfig().topics());
+      if (consumingConfig.batchCallback() == null && consumingConfig.callback() == null) {
+        throw new IllegalArgumentException("You should inform BatchCallback Or Callback");
+      }
+      log.debug("status=consumer-thread-subscribed, id={}", this.id());
+
       while (this.mustRun()) {
         final ConsumerRecords<K, V> records = consumer.poll(this.getPollTimeout(consumingConfig));
         if (log.isTraceEnabled()) {
@@ -64,14 +67,14 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
         this.conditionalSleep(consumingConfig);
       }
     } catch (Exception e) {
-      log.error("status=consumer-stopped-by-failure, id={}", this.id(), e);
+      log.error("status=thread-stopped-by-failure, id={}", this.id(), e);
       this.consumerError = e;
     } finally {
       try {
         consumer.close();
       } catch (InterruptException e) {
       }
-      log.info("status=consumer-stopped, id={}", this.id());
+      log.debug("status=thread-stopped, id={}, config={}", this.id(), this.consumerConfig());
       this.stopped = true;
     }
   }
@@ -87,17 +90,17 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
       log.warn("status=already-closed, id={}", this.id());
       return;
     }
-    log.debug("status=closing, id={}", this.id());
+    log.debug("status=closing, thread={}, config={}", this.id(), this.consumerConfig());
     this.closed = true;
     while (!this.isStopped()) {
       this.conditionalSleep(this.consumerConfig());
     }
-    log.info("status=closed, thread={}, config={}", this.id(), this.consumerConfig());
+    log.debug("status=closed, thread={}, config={}", this.id(), this.consumerConfig());
   }
 
   @Override
   public String id() {
-    return String.format("%d-%s", this.executor.getId(), this.executor.getName());
+    return String.format("%d-%s_%s", this.executor.getId(), this.executor.getName(), this.consumerConfig());
   }
 
   public boolean isClosed() {
@@ -145,7 +148,9 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
       commitSyncRecord(ctx.consumer(), ctx.record());
     } else {
       log.warn(
-          "status=no recover callback was specified, ConsumerRecord consume failed and will be discarded, err={}",
+          "status=no recover callback was specified, ConsumerRecord consume failed and will be discarded, config={}, "
+              + "err={}",
+          this.consumerConfig(),
           ctx.lastFailure()
               .getMessage()
       );
