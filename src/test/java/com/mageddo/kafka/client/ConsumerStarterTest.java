@@ -101,9 +101,7 @@ class ConsumerStarterTest {
     assertEquals(templatePollInterval, actualConfig.pollInterval());
     assertEquals(templatePollTimeout, actualConfig.pollTimeout());
     assertEquals(1, actualConfig.props().size());
-
   }
-
 
   @Test
   void consumerSpecificConfigMustOverrideTemplateConfigs() {
@@ -126,6 +124,7 @@ class ConsumerStarterTest {
         .pollInterval(pollInterval)
         .pollTimeout(pollTimeout)
         .build();
+
     doReturn(mock(ConsumerController.class))
         .when(consumerStarter)
         .start(any(ConsumerConfig.class));
@@ -148,4 +147,33 @@ class ConsumerStarterTest {
 
   }
 
+
+  @Test
+  void mustNotOverrideConsumerThreadsWhenDefaultValueIsDisabled() {
+
+    // arrange
+    final var consumingDisabled = Integer.MIN_VALUE;
+    final var templateConfig = ConsumerConfigTemplates.builder()
+        .consumers(consumingDisabled)
+        .build();
+    final var consumerStarter = spy(new ConsumerStarter<>(templateConfig));
+    final var consumers = 333;
+    final var consumerConfig = ConsumerConfig
+        .builder()
+        .consumers(consumers)
+        .build();
+
+    doReturn(mock(ConsumerController.class))
+        .when(consumerStarter)
+        .start(any(ConsumerConfig.class));
+
+    // act
+    consumerStarter.startFromConfig(List.of(consumerConfig));
+
+    // assert
+    verify(consumerStarter).start(this.argumentCaptor.capture());
+    final var actualConfig = this.argumentCaptor.getValue();
+    assertEquals(consumingDisabled, actualConfig.consumers());
+
+  }
 }

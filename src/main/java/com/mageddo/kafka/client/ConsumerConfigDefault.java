@@ -201,17 +201,27 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
   }
 
   public static <K, V> Builder<K, V> copyToBuilder(ConsumerConfig<K, V> primary, ConsumerConfig<K, V> secondary) {
-    final Builder<K, V> builder = ConsumerConfigDefault.builder();
-    fillWith(secondary, builder);
-    fillWith(primary, builder);
+    final Builder<K, V> builder = copyToBuilder(
+        secondary,
+        ConsumerConfig.<K, V>builder().build(),
+        ConsumerConfig.builder()
+    );
+    return copyToBuilder(primary, secondary, builder);
+  }
+
+  public static <K, V> Builder<K, V> copyToBuilder(
+      ConsumerConfig<K, V> primary, ConsumerConfig<K, V> secondary, Builder<K, V> builder
+  ) {
+    fillPropsWith(secondary, builder);
+    fillPropsWith(primary, builder);
     return builder
         .callback(firstNonNull(primary.callback(), secondary.callback()))
         .batchCallback(firstNonNull(primary.batchCallback(), secondary.batchCallback()))
         .topics(
             primary.topics()
-            .isEmpty() ? secondary.topics() : primary.topics()
+                .isEmpty() ? secondary.topics() : primary.topics()
         )
-        .consumers(primary.consumers() != CONSUMERS_NOT_SET ? primary.consumers() : secondary.consumers())
+        .consumers(decideConsumerThreads(primary, secondary))
         .recoverCallback(firstNonNull(primary.recoverCallback(), secondary.recoverCallback()))
         .retryPolicy(firstNonNull(primary.retryPolicy(), secondary.retryPolicy()))
         .consumerSupplier(firstNonNull(primary.consumerSupplier(), secondary.consumerSupplier()))
@@ -219,7 +229,11 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
         .pollTimeout(firstNonNull(primary.pollTimeout(), secondary.pollTimeout()));
   }
 
-  private static <K, V> void fillWith(ConsumerConfig<K, V> source, Builder<K, V> target) {
+  private static <K, V> int decideConsumerThreads(ConsumerConfig<K, V> primary, ConsumerConfig<K, V> secondary) {
+    return primary.consumers() != CONSUMERS_NOT_SET ? primary.consumers() : secondary.consumers();
+  }
+
+  private static <K, V> void fillPropsWith(ConsumerConfig<K, V> source, Builder<K, V> target) {
     source
         .props()
         .forEach(target::prop);
