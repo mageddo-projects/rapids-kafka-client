@@ -134,8 +134,28 @@ class RecordConsumerTest {
     assertEquals(1, timesRetried.get());
   }
 
+  @Test
+  void mustUseDefaultRetryStrategyWhenItComesNull() {
+    // arrange
+    final var consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+        .toBuilder()
+        .retryPolicy(null)
+        .build();
+    final var consumer = this.createConsumer(consumerConfig);
+    final var records = ConsumerRecordsTemplates.build(
+        TOPIC,
+        ConsumerRecordTemplates.build("Hello World".getBytes())
+    );
+
+    // act
+    consumer.consume(records);
+
+    // assert
+    verify(consumer).getRetryPolicy();
+  }
+
   protected RecordConsumer<String, byte[]> createConsumer(ConsumerConfigDefault<String, byte[]> consumerConfig) {
-    return new RecordConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
+    return spy(new RecordConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig));
   }
 
 }

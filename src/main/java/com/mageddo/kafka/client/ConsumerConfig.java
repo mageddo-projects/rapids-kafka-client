@@ -29,6 +29,8 @@ package com.mageddo.kafka.client;
  *
  * @see org.apache.kafka.clients.consumer.ConsumerRecord
  * @see ConsumerStarter
+ * @see ConsumerConfigDefault#copy(ConsumerConfig, ConsumerConfig)
+ * @see ConsumerConfigDefault#copyToBuilder(ConsumerConfig, ConsumerConfig)
  */
 public interface ConsumerConfig<K, V> extends ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
   static <K, V> ConsumerConfigDefault.Builder<K, V> builder() {

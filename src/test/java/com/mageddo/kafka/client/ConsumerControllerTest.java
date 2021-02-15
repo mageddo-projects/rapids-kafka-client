@@ -43,7 +43,7 @@ class ConsumerControllerTest {
         )
         .build();
 
-    doReturn(ConsumerTemplates.build(topic, Collections.emptyList()))
+    doReturn(ConsumerTemplates.buildMock(topic, Collections.emptyList()))
         .when(this.consumerController)
         .create(eq(consumerConfig));
 
@@ -71,7 +71,7 @@ class ConsumerControllerTest {
         )
         .build();
 
-    doReturn(ConsumerTemplates.build(topic, Collections.emptyList()))
+    doReturn(ConsumerTemplates.buildMock(topic, Collections.emptyList()))
         .when(this.consumerController)
         .create(eq(consumerConfig));
 
@@ -80,6 +80,27 @@ class ConsumerControllerTest {
 
     // assert
     verify(this.consumerController, never()).notifyNotRecommendedRetryPolicy(anyInt(), any(), anyLong());
+
+  }
+
+  @Test
+  void mustUseDefaultRetryStrategyWhenNotSet() {
+
+    // arrange
+    final var topic = "fruit_topic";
+    final var consumerConfig = ConsumerConfigTemplates.<String, byte[]>noConsumers()
+        .toBuilder()
+        .retryPolicy(null)
+        .build();
+
+    doReturn(ConsumerTemplates.buildMock(topic, Collections.emptyList()))
+        .when(this.consumerController)
+        .create(eq(consumerConfig));
+
+    // act
+    // assert
+    this.consumerController.consume(consumerConfig);
+
 
   }
 

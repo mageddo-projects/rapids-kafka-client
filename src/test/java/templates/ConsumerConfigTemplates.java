@@ -34,4 +34,9 @@ public class ConsumerConfigTemplates {
         ;
   }
 
+  public static <K, V> ConsumerConfigDefault<K, V> noConsumers() {
+    return ConsumerConfigTemplates.<K, V>builder()
+        .consumers(0)
+        .build();
+  }
 }
