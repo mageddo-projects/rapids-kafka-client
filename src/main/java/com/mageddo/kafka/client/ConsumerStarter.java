@@ -101,6 +101,7 @@ public class ConsumerStarter<K, V> {
       throw new IllegalStateException("Already stopped");
     }
     this.stopped = true;
+    log.info("status=stopping-consumers, toStop={}", this.factories.size());
     final ExecutorService executorService = Executors.newScheduledThreadPool(5);
     try {
       final List<Future<String>> futures = new ArrayList<>();
@@ -115,10 +116,11 @@ public class ConsumerStarter<K, V> {
           }
         }));
       }
+      int stopped = 0;
       for (Future<String> future : futures) {
         try {
           final String id = future.get();
-          log.info("status=stopped, factory={}", id);
+          log.info("status=stopped, {} of {}, factory={}", ++stopped, this.factories.size(), id);
         } catch (InterruptedException | ExecutionException e) {
           throw new RuntimeException(e);
         }
