@@ -52,43 +52,45 @@ import org.slf4j.LoggerFactory;
  * }
  * </pre>
  */
-public class ConsumerStarter {
+public class ConsumerStarter<K, V> {
 
   private static final Logger log = LoggerFactory.getLogger(ConsumerStarter.class);
 
-  private final ConsumerConfig<?, ?> config;
+  private final ConsumerConfig<K, V> config;
   private final List<ConsumerController<?, ?>> factories;
   private boolean started = false;
   private boolean stopped = false;
 
-  public ConsumerStarter(ConsumerConfig<?, ?> config) {
+  public ConsumerStarter(ConsumerConfig<K, V> config) {
     this.config = config;
     this.factories = new ArrayList<>();
   }
 
-  public static ConsumerStarter startFromConfig(ConsumerConfig<?, ?> config, List<ConsumerConfig> configs) {
-    return new ConsumerStarter(config).startFromConfig(configs);
+  public static <K, V> ConsumerStarter<K, V> startFromConfig(
+      ConsumerConfig<K, V> config, List<ConsumerConfig<K, V>> configs
+  ) {
+    return new ConsumerStarter<K, V>(config).startFromConfig(configs);
   }
 
-  public static ConsumerStarter start(ConsumerConfig<?, ?> config, List<Consumer> consumers) {
-    return new ConsumerStarter(config).start(consumers);
+  public static <K, V> ConsumerStarter<K, V> start(ConsumerConfig<K, V> config, List<Consumer> consumers) {
+    return new ConsumerStarter<K, V>(config).start(consumers);
   }
 
-  public ConsumerStarter start(List<Consumer> consumers) {
+  public ConsumerStarter<K, V> start(List<Consumer> consumers) {
     this.startFromConfig(consumers
         .stream()
-        .map(Consumer::config)
+        .map(it -> (ConsumerConfig<K, V>) it.config())
         .collect(Collectors.toList())
     );
     return this;
   }
 
-  public ConsumerStarter startFromConfig(List<ConsumerConfig> consumers) {
+  public ConsumerStarter<K, V> startFromConfig(List<ConsumerConfig<K, V>> consumers) {
     if (this.started) {
       throw new IllegalStateException("ConsumerConfig were already started");
     }
     this.started = true;
-    for (final ConsumerConfig config : consumers) {
+    for (final ConsumerConfig<K, V> config : consumers) {
       this.factories.add(this.start(this.buildConsumer(config)));
     }
     return this;
@@ -128,16 +130,16 @@ public class ConsumerStarter {
     }
   }
 
-  public void waitFor(){
+  public void waitFor() {
     ConsumerConfigDefault.waitFor();
   }
 
-  private ConsumerConfigDefault<?, ?> buildConsumer(ConsumerConfig<?, ?> config) {
+  private ConsumerConfigDefault<K, V> buildConsumer(ConsumerConfig<K, V> config) {
     return ConsumerConfigDefault.copy(config, this.config);
   }
 
-  ConsumerController<?, ?> start(ConsumerConfig<?, ?> consumerConfig) {
-    final ConsumerController consumerController = new ConsumerController<>();
+  ConsumerController<K,V> start(ConsumerConfig<K,V> consumerConfig) {
+    final ConsumerController<K,V> consumerController = new ConsumerController<>();
     consumerController.consume(consumerConfig);
     return consumerController;
   }

@@ -3,6 +3,7 @@ package com.mageddo.kafka.client;
 import java.time.Duration;
 import java.util.Collections;
 
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.MockConsumer;
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.config.ConfigException;
@@ -23,6 +24,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -179,6 +181,30 @@ class ConsumerControllerTest {
 
     assertNull(consumer.getConsumerError());
     verify(mockConsumer, atLeastOnce()).poll(any(Duration.class));
+
+  }
+
+  @Test
+  @SneakyThrows
+  void mustUseDefaultConsumerThreadsWhenItsNotSet() {
+    // arrange
+    final var consumerConfig = ConsumerConfig
+        .<String, byte[]>builder()
+        .callback((callbackContext, record) -> System.out.println("nop"))
+        .build();
+
+    doReturn(mock(Consumer.class))
+        .when(this.consumerController)
+        .create(any());
+    doReturn(mock(ThreadConsumer.class))
+        .when(this.consumerController)
+        .getInstance(any(), any());
+
+    // act
+    this.consumerController.consume(consumerConfig);
+
+    // assert
+    verify(this.consumerController).getInstance(any(), any());
 
   }
 

@@ -14,6 +14,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.mageddo.kafka.client.ConsumerConfigDefault.CONSUMERS_NOT_SET;
 import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
 import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
@@ -60,7 +61,10 @@ public class ConsumerController<K, V> implements AutoCloseable {
     }
     this.started = true;
     this.consumerConfig = consumerConfig;
-    if (consumerConfig.consumers() == Integer.MIN_VALUE) {
+    final int threads = consumerConfig.consumers() != CONSUMERS_NOT_SET
+        ? consumerConfig.consumers()
+        : 1;
+    if (threads == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
           this.consumerConfig.groupId(),
@@ -70,7 +74,7 @@ public class ConsumerController<K, V> implements AutoCloseable {
     }
     this.checkReasonablePollInterval(consumerConfig);
 
-    for (int i = 0; i < consumerConfig.consumers(); i++) {
+    for (int i = 0; i < threads; i++) {
       final ThreadConsumer<K, V> consumer = this.getInstance(this.create(consumerConfig), consumerConfig);
       consumer.start();
     }
