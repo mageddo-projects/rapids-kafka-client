@@ -20,7 +20,7 @@ Kafka Client is a vanilla java library that makes it easy to consume data from k
 # Getting Started
 
 ```groovy
-compile("com.mageddo.rapids-kafka-client:rapids-kafka-client:2.0.2-snapshot")
+compile("com.mageddo.rapids-kafka-client:rapids-kafka-client:2.0.2")
 ```
 
 ```java
