@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.mageddo.kafka.client.internal.ObjectsUtils;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -14,6 +16,8 @@ import org.apache.kafka.common.errors.InterruptException;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+
+import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
 
 @Slf4j
 public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
@@ -52,7 +56,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
     }
     try {
       while (this.mustRun()) {
-        final ConsumerRecords<K, V> records = consumer.poll(consumingConfig.pollTimeout());
+        final ConsumerRecords<K, V> records = consumer.poll(this.getPollTimeout(consumingConfig));
         if (log.isTraceEnabled()) {
           log.trace("status=polled, records={}", records.count());
         }
@@ -70,6 +74,10 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
       log.info("status=consumer-stopped, id={}", this.id());
       this.stopped = true;
     }
+  }
+
+  private Duration getPollTimeout(ConsumingConfig<K, V> consumingConfig) {
+    return ObjectsUtils.firstNonNull(consumingConfig.pollTimeout(), DEFAULT_POLL_TIMEOUT);
   }
 
   @Override

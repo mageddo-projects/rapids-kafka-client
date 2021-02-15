@@ -21,6 +21,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -125,8 +126,8 @@ class ConsumerControllerTest {
 
   }
 
-  @SneakyThrows
   @Test
+  @SneakyThrows
   void mustUseDefaultPollIntervalWhenItsNotSet() {
     // arrange
     final var consumerConfig = ConsumerConfig
@@ -136,37 +137,11 @@ class ConsumerControllerTest {
         .callback((callbackContext, record) -> System.out.println("nop"))
         .build();
 
-//    Mockito
-//        .doAnswer(invocation -> {
-//          final var actual = (DefaultConsumer) invocation.callRealMethod();
-//          return new ThreadConsumer<>() {
-//
-//            @Override
-//            public void close() {
-//              actual.close();
-//            }
-//
-//            @Override
-//            public void start() {
-//              actual.executor = new Thread();
-//              actual.poll(actual.consumer(), actual.consumerConfig());
-//            }
-//
-//            @Override
-//            public String id() {
-//              return actual.id();
-//            }
-//          };
-//        })
-//        .when(this.consumerController)
-//        .getInstance(any(), any());
-
-
     // act
     this.consumerController.consume(consumerConfig);
 
     // assert
-    Thread.sleep(1000);
+    Thread.sleep(500);
     this.consumerController.close();
     final var consumer = (DefaultConsumer) this.consumerController
         .getConsumers()
@@ -175,6 +150,35 @@ class ConsumerControllerTest {
         .orElseThrow();
 
     assertNull(consumer.getConsumerError());
+
+  }
+
+  @Test
+  @SneakyThrows
+  void mustUseDefaultPollTimeoutWhenItsNotSet() {
+    // arrange
+    final var mockConsumer = spy(new MockConsumer<String, byte[]>(OffsetResetStrategy.EARLIEST));
+    final var consumerConfig = ConsumerConfig
+        .<String, byte[]>builder()
+        .consumerSupplier(config -> mockConsumer)
+        .consumers(1)
+        .callback((callbackContext, record) -> System.out.println("nop"))
+        .build();
+
+    // act
+    this.consumerController.consume(consumerConfig);
+
+    // assert
+    Thread.sleep(500);
+    this.consumerController.close();
+    final var consumer = (DefaultConsumer) this.consumerController
+        .getConsumers()
+        .stream()
+        .findFirst()
+        .orElseThrow();
+
+    assertNull(consumer.getConsumerError());
+    verify(mockConsumer, atLeastOnce()).poll(any(Duration.class));
 
   }
 
