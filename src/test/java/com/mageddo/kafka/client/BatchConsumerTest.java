@@ -103,7 +103,6 @@ class BatchConsumerTest {
 
   }
 
-
   @Test
   void mustCommitAfterSuccessfullyConsume() {
     // arrange
@@ -132,8 +131,29 @@ class BatchConsumerTest {
     assertEquals(1, timesRetried.get());
   }
 
-  protected DefaultConsumer<String, byte[]> createConsumer(ConsumerConfigDefault<String, byte[]> consumerConfig) {
-    return new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
+  @Test
+  void mustUseDefaultRetryStrategyWhenItComesNull() {
+    // arrange
+    final var consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+        .toBuilder()
+        .retryPolicy(null)
+        .build();
+    final var consumer = this.createConsumer(consumerConfig);
+    final var records = ConsumerRecordsTemplates.build(
+        TOPIC,
+        ConsumerRecordTemplates.build("Hello World".getBytes())
+    );
+
+    // act
+    consumer.consume(records);
+
+    // assert
+    verify(consumer).getRetryPolicy();
+  }
+
+
+  protected BatchConsumer<String, byte[]> createConsumer(ConsumerConfigDefault<String, byte[]> consumerConfig) {
+    return spy(new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig));
   }
 
 }

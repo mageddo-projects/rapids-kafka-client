@@ -2,6 +2,8 @@ package com.mageddo.kafka.client;
 
 import java.util.List;
 
+import com.mageddo.kafka.client.internal.ObjectsUtils;
+
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -10,18 +12,20 @@ import org.apache.kafka.common.TopicPartition;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+
 @Slf4j
 @RequiredArgsConstructor
 public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
-  private final ConsumerConfigDefault<K, V> consumerConfig;
+  private final ConsumerConfig<K, V> consumerConfig;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
     final Retrier retrier = Retrier
         .builder()
-        .retryPolicy(this.consumerConfig.retryPolicy())
+        .retryPolicy(this.getRetryPolicy())
         .onRetry(() -> {
           log.info("failed to consume");
           for (final TopicPartition partition : records.partitions()) {
@@ -70,7 +74,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   }
 
   @Override
-  protected ConsumerConfigDefault<K, V> consumerConfig() {
+  protected ConsumerConfig<K, V> consumerConfig() {
     return this.consumerConfig;
   }
 
@@ -86,4 +90,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
     return partitionRecords.isEmpty() ? null : partitionRecords.get(0);
   }
 
+  RetryPolicy getRetryPolicy() {
+    return ObjectsUtils.firstNonNull(this.consumerConfig.retryPolicy(), DEFAULT_RETRY_STRATEGY);
+  }
 }

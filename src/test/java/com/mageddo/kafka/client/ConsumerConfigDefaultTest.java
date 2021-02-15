@@ -4,14 +4,37 @@ import org.junit.jupiter.api.Test;
 
 import templates.ConsumerConfigTemplates;
 
+import static com.mageddo.kafka.client.ConsumerConfigDefault.CONSUMERS_NOT_SET;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class ConsumerConfigDefaultTest {
 
   @Test
-  void validateDefaultConfigs() {
+  void mustNotSetDefaultFields(){
+    // arrange
+    final ConsumerConfigDefault<String, byte[]> config = ConsumerConfigDefault
+        .<String, byte[]>builder()
+        .topics("topic")
+        .build();
+
+    // act
+    // assert
+    assertNull(config.pollTimeout());
+    assertNull(config.pollInterval());
+    assertNull(config.retryPolicy());
+    assertNull(config.consumerSupplier());
+    assertEquals(CONSUMERS_NOT_SET, config.consumers());
+
+  }
+
+  /**
+   * Default props must be set the consumer creator at the last moment
+   */
+  @Test
+  void mustNotSetDefaultProps() {
 
     // arrange
     final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigDefault
@@ -25,7 +48,7 @@ class ConsumerConfigDefaultTest {
         .toString();
 
     //assert
-    assertEquals("{enable.auto.commit=false, bootstrap.servers=localhost:9092}", props);
+    assertEquals("{}", props);
 
   }
 
@@ -44,9 +67,9 @@ class ConsumerConfigDefaultTest {
 
     // assert
     assertEquals(String.valueOf(consumerConfig), String.valueOf(copy));
-    assertEquals(3, consumerConfig.props()
+    assertEquals(1, consumerConfig.props()
         .size());
-    assertEquals(3, copy.props()
+    assertEquals(1, copy.props()
         .size());
     assertNotEquals(System.identityHashCode(consumerConfig), System.identityHashCode(copy));
   }

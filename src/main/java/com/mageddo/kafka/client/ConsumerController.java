@@ -2,7 +2,11 @@ package com.mageddo.kafka.client;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.mageddo.kafka.client.internal.ObjectsUtils;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -10,6 +14,9 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
+import static org.apache.kafka.clients.CommonClientConfigs.BOOTSTRAP_SERVERS_CONFIG;
+import static org.apache.kafka.clients.consumer.ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 /**
@@ -26,17 +33,28 @@ public class ConsumerController<K, V> implements AutoCloseable {
   private List<ThreadConsumer<K, V>> consumers = new ArrayList<>();
   private boolean started;
   private boolean closed;
-  private ConsumerConfigDefault<K, V> consumerConfig;
+  private ConsumerConfig<K, V> consumerConfig;
 
   public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
-    return config -> new KafkaConsumer<>(config.props());
+    return config -> new KafkaConsumer<>(addDefaultConfigs(config));
+  }
+
+  private static <K, V> Map<String, Object> addDefaultConfigs(ConsumerCreateConfig<K, V> config) {
+    final HashMap<String, Object> props = new HashMap<>(config.props());
+    if (!props.containsKey(ENABLE_AUTO_COMMIT_CONFIG)) {
+      props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
+    }
+    if (!props.containsKey(BOOTSTRAP_SERVERS_CONFIG)) {
+      props.put(BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+    }
+    return props;
   }
 
   public boolean isRunning() {
     return this.started && !this.closed;
   }
 
-  public void consume(ConsumerConfigDefault<K, V> consumerConfig) {
+  public void consume(ConsumerConfig<K, V> consumerConfig) {
     if (this.started) {
       throw new IllegalStateException(String.format("Can't start twice: %s", consumerConfig));
     }
@@ -45,7 +63,7 @@ public class ConsumerController<K, V> implements AutoCloseable {
     if (consumerConfig.consumers() == Integer.MIN_VALUE) {
       log.info(
           "status=disabled-consumer, groupId={}, topics={}",
-          this.consumerConfig.getGroupId(),
+          this.consumerConfig.groupId(),
           consumerConfig.topics()
       );
       return;
@@ -53,20 +71,20 @@ public class ConsumerController<K, V> implements AutoCloseable {
     this.checkReasonablePollInterval(consumerConfig);
 
     for (int i = 0; i < consumerConfig.consumers(); i++) {
-      final ThreadConsumer<K, V> consumer = getInstance(create(consumerConfig), consumerConfig);
+      final ThreadConsumer<K, V> consumer = this.getInstance(this.create(consumerConfig), consumerConfig);
       consumer.start();
     }
     log.info(
         "status=consumers started, threads={}, topics={}, groupId={}",
-        this.consumers.size(), consumerConfig.topics(), this.consumerConfig.getGroupId()
+        this.consumers.size(), consumerConfig.topics(), this.consumerConfig.groupId()
     );
   }
 
-  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfigDefault<K, V> consumerConfig) {
+  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
     if (consumerConfig.batchCallback() != null) {
-      return bindInstance(new BatchConsumer<>(consumer, consumerConfig));
+      return this.bindInstance(new BatchConsumer<>(consumer, consumerConfig));
     }
-    return bindInstance(new RecordConsumer<>(consumer, consumerConfig));
+    return this.bindInstance(new RecordConsumer<>(consumer, consumerConfig));
   }
 
   private ThreadConsumer<K, V> bindInstance(ThreadConsumer<K, V> consumer) {
@@ -74,12 +92,16 @@ public class ConsumerController<K, V> implements AutoCloseable {
     return consumer;
   }
 
-  Consumer<K, V> create(ConsumerConfigDefault<K, V> consumerConfig) {
-    return consumerConfig.consumerSupplier()
+  Consumer<K, V> create(ConsumerConfig<K, V> consumerConfig) {
+    return ObjectsUtils
+        .firstNonNull(
+            consumerConfig.consumerSupplier(),
+            ConsumerController.<K, V>defaultConsumerSupplier()
+        )
         .get(consumerConfig);
   }
 
-  private void checkReasonablePollInterval(ConsumerConfigDefault<K, V> consumerConfig) {
+  private void checkReasonablePollInterval(ConsumerConfig<K, V> consumerConfig) {
     final int defaultPollInterval = (int) Duration
         .ofMinutes(5)
         .toMillis();
@@ -88,8 +110,7 @@ public class ConsumerController<K, V> implements AutoCloseable {
         .props()
         .getOrDefault(MAX_POLL_INTERVAL_MS_CONFIG, defaultPollInterval);
 
-    final RetryPolicy retryPolicy = consumerConfig.retryPolicy();
-
+    final RetryPolicy retryPolicy = ObjectsUtils.firstNonNull(consumerConfig.retryPolicy(), DEFAULT_RETRY_STRATEGY);
     final long retryMaxWaitTime = retryPolicy
         .calcMaxTotalWaitTime()
         .toMillis();
@@ -135,8 +156,12 @@ public class ConsumerController<K, V> implements AutoCloseable {
 
   @Override
   public String toString() {
-    return String.format("ConsumerController(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(),
+    return String.format("ConsumerController(groupId=%s, topics=%s)", this.consumerConfig.groupId(),
         this.consumerConfig.topics()
     );
+  }
+
+  List<ThreadConsumer<K, V>> getConsumers() {
+    return consumers;
   }
 }

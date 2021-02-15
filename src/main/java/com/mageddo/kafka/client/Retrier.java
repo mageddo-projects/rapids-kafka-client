@@ -7,6 +7,7 @@ import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.Fallback;
 
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,6 +18,7 @@ import static com.mageddo.kafka.client.RetryPolicyConverter.retryPolicyToFailSaf
 @Builder
 public class Retrier {
 
+  @NonNull
   private RetryPolicy retryPolicy;
   private Callback onRetry;
   private Consumer<Throwable> onExhausted;

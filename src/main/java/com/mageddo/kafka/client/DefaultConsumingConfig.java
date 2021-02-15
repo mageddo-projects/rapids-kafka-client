@@ -13,7 +13,7 @@ import lombok.experimental.Accessors;
 public class DefaultConsumingConfig<K, V> implements ConsumingConfig<K, V> {
 
   public static final int FPS_30 = 1000 / 30;
-  public static final Duration FPS_30_DURATION = Duration.ofMillis(FPS_30);
+  public static final Duration FPS_30_INTERVAL = Duration.ofMillis(FPS_30);
   public static final Duration DEFAULT_POLL_TIMEOUT = Duration.ofMillis(2500);
   public static final RetryPolicy DEFAULT_RETRY_STRATEGY = RetryPolicy
       .builder()
@@ -27,7 +27,7 @@ public class DefaultConsumingConfig<K, V> implements ConsumingConfig<K, V> {
 
   @NonNull
   @Builder.Default
-  private Duration pollInterval = FPS_30_DURATION;
+  private Duration pollInterval = FPS_30_INTERVAL;
 
   @NonNull
   @Builder.Default

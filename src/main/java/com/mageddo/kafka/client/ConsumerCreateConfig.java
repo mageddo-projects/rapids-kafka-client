@@ -27,4 +27,9 @@ public interface ConsumerCreateConfig<K, V> {
    * {@link ConsumerController#defaultConsumerSupplier()} is used by default.
    */
   ConsumerSupplier<K, V> consumerSupplier();
+
+  /**
+   * @return The consumer groupId got from {@link #props()}
+   */
+  String groupId();
 }

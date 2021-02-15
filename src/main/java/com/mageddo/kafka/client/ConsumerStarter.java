@@ -89,8 +89,7 @@ public class ConsumerStarter {
     }
     this.started = true;
     for (final ConsumerConfig config : consumers) {
-      this.factories.add(this.buildConsumer(config)
-          .consume());
+      this.factories.add(this.start(this.buildConsumer(config)));
     }
     return this;
   }
@@ -129,27 +128,18 @@ public class ConsumerStarter {
     }
   }
 
-  private ConsumerConfigDefault<?, ?> buildConsumer(ConsumerConfig<?, ?> config) {
-    final ConsumerConfigDefault.Builder builder = ConsumerConfigDefault.builderOf(this.config);
-    config
-        .props()
-        .forEach(builder::prop)
-    ;
-    return builder
-        .callback(config.callback())
-        .batchCallback(config.batchCallback())
-        .topics(config.topics())
-        .consumers(config.consumers())
-        .recoverCallback(config.recoverCallback())
-        .retryPolicy(config.retryPolicy())
-        .consumerSupplier(config.consumerSupplier())
-        .pollInterval(config.pollInterval())
-        .pollTimeout(config.pollTimeout())
-        .build()
-        ;
-  }
-
   public void waitFor(){
     ConsumerConfigDefault.waitFor();
   }
+
+  private ConsumerConfigDefault<?, ?> buildConsumer(ConsumerConfig<?, ?> config) {
+    return ConsumerConfigDefault.copy(config, this.config);
+  }
+
+  ConsumerController<?, ?> start(ConsumerConfig<?, ?> consumerConfig) {
+    final ConsumerController consumerController = new ConsumerController<>();
+    consumerController.consume(consumerConfig);
+    return consumerController;
+  }
+
 }
