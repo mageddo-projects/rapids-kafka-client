@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
-  private final Consumers<K, V> consumers;
+  private final ConsumerConfigDefault<K, V> consumerConfig;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
@@ -23,7 +23,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
       final AtomicBoolean recovered = new AtomicBoolean();
       Retrier
           .builder()
-          .retryPolicy(this.consumers.retryPolicy())
+          .retryPolicy(this.consumerConfig.retryPolicy())
           .onExhausted((lastFailure) -> {
             if(log.isDebugEnabled()){
               log.debug("exhausted tries");
@@ -36,7 +36,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
                     .record(record)
                     .build()
                 ,
-                this.consumers.recoverCallback()
+                this.consumerConfig.recoverCallback()
             );
             recovered.set(true);
           })
@@ -50,7 +50,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
               log.info("status=consuming, record={}", record);
             }
             try {
-              this.consumers
+              this.consumerConfig
                   .callback()
                   .accept(
                       DefaultCallbackContext
@@ -81,7 +81,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
   }
 
   @Override
-  protected Consumers<K, V> consumerConfig() {
-    return this.consumers;
+  protected ConsumerConfigDefault<K, V> consumerConfig() {
+    return this.consumerConfig;
   }
 }

@@ -13,18 +13,18 @@ import lombok.extern.slf4j.Slf4j;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
 @Slf4j
-public class ConsumerFactory<K, V> implements AutoCloseable {
+public class ConsumerController<K, V> implements AutoCloseable {
 
   private List<ThreadConsumer<K, V>> consumers = new ArrayList<>();
   private boolean started;
   private boolean closed;
-  private Consumers<K, V> consumerConfig;
+  private ConsumerConfigDefault<K, V> consumerConfig;
 
   public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
     return config -> new KafkaConsumer<>(config.props());
   }
 
-  public void consume(Consumers<K, V> consumerConfig) {
+  public void consume(ConsumerConfigDefault<K, V> consumerConfig) {
     if (this.started) {
       throw new IllegalStateException(String.format("Can't start twice: %s", consumerConfig));
     }
@@ -50,7 +50,7 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     );
   }
 
-  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, Consumers<K, V> consumerConfig) {
+  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfigDefault<K, V> consumerConfig) {
     if (consumerConfig.batchCallback() != null) {
       return bindInstance(new BatchConsumer<>(consumer, consumerConfig));
     }
@@ -62,12 +62,12 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
     return consumer;
   }
 
-  Consumer<K, V> create(Consumers<K, V> consumerConfig) {
+  Consumer<K, V> create(ConsumerConfigDefault<K, V> consumerConfig) {
     return consumerConfig.consumerSupplier()
         .get(consumerConfig);
   }
 
-  private void checkReasonablePollInterval(Consumers<K, V> consumerConfig) {
+  private void checkReasonablePollInterval(ConsumerConfigDefault<K, V> consumerConfig) {
     final int defaultPollInterval = (int) Duration
         .ofMinutes(5)
         .toMillis();
@@ -115,7 +115,7 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
    * wait until all consumers threads termination
    */
   @SneakyThrows
-  public ConsumerFactory<K, V> waitFor() {
+  public ConsumerController<K, V> waitFor() {
     Thread.currentThread()
         .join();
     return this;
@@ -123,6 +123,6 @@ public class ConsumerFactory<K, V> implements AutoCloseable {
 
   @Override
   public String toString() {
-    return String.format("ConsumerFactory(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(), this.consumerConfig.topics());
+    return String.format("ConsumerController(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(), this.consumerConfig.topics());
   }
 }

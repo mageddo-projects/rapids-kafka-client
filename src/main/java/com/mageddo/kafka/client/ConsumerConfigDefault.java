@@ -26,12 +26,12 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 
 @Getter
-@Builder
+@Builder(builderClassName = "Builder")
 @Accessors(chain = true, fluent = true)
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @EqualsAndHashCode
 @AllArgsConstructor
-public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
+public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
 
   /**
    * @see ConsumerCreateConfig#props()
@@ -87,7 +87,14 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
    */
   private ConsumerSupplier<K, V> consumerSupplier;
 
-  public Consumers<K, V> prop(String k, Object v) {
+  public static Builder builderOf(ConsumerConfig<?, ?> config) {
+    if(config instanceof ConsumerConfigDefault){
+      return ((ConsumerConfigDefault) config).toBuilder();
+    }
+    throw new UnsupportedOperationException("Until this moment, only ConsumerConfigDefault is supported");
+  }
+
+  public ConsumerConfigDefault<K, V> prop(String k, Object v) {
     this.props.put(k, v);
     return this;
   }
@@ -102,8 +109,8 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     return Collections.unmodifiableMap(this.props);
   }
 
-  public ConsumersBuilder<K, V> toBuilder() {
-    return new ConsumersBuilder<K, V>()
+  public Builder<K, V> toBuilder() {
+    return new Builder<K, V>()
         .consumers(this.consumers)
         .topics(new ArrayList<>(this.topics))
         .pollTimeout(this.pollTimeout)
@@ -116,21 +123,21 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
         ;
   }
 
-  public ConsumerFactory<K, V> consume() {
+  public ConsumerController<K, V> consume() {
     return this.consume(this);
   }
 
-  public ConsumerFactory<K, V> consume(Consumers<K, V> consumerConfig) {
-    final ConsumerFactory<K, V> consumerFactory = new ConsumerFactory<>();
-    consumerFactory.consume(consumerConfig);
-    return consumerFactory;
+  public ConsumerController<K, V> consume(ConsumerConfigDefault<K, V> consumerConfig) {
+    final ConsumerController<K, V> consumerController = new ConsumerController<>();
+    consumerController.consume(consumerConfig);
+    return consumerController;
   }
 
-  public ConsumerFactory<K, V> consume(ConsumeCallback<K, V> consumeCallback) {
+  public ConsumerController<K, V> consume(ConsumeCallback<K, V> consumeCallback) {
     return this.consume(consumeCallback, null);
   }
 
-  public ConsumerFactory<K, V> consume(ConsumeCallback<K, V> consumeCallback, RecoverCallback<K, V> recoverCallback) {
+  public ConsumerController<K, V> consume(ConsumeCallback<K, V> consumeCallback, RecoverCallback<K, V> recoverCallback) {
     return this.consume(this
         .toBuilder()
         .callback(consumeCallback)
@@ -139,7 +146,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     );
   }
 
-  public ConsumerFactory<K, V> consume(
+  public ConsumerController<K, V> consume(
       String topic,
       ConsumeCallback<K, V> consumeCallback,
       RecoverCallback<K, V> recoverCallback
@@ -153,11 +160,11 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     );
   }
 
-  public ConsumerFactory<K, V> batchConsume(BatchConsumeCallback<K, V> batchConsumeCallback) {
+  public ConsumerController<K, V> batchConsume(BatchConsumeCallback<K, V> batchConsumeCallback) {
     return this.batchConsume(batchConsumeCallback, null);
   }
 
-  public ConsumerFactory<K, V> batchConsume(
+  public ConsumerController<K, V> batchConsume(
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback
   ) {
@@ -169,7 +176,7 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
     );
   }
 
-  public ConsumerFactory<K, V> batchConsume(
+  public ConsumerController<K, V> batchConsume(
       String topic,
       BatchConsumeCallback<K, V> batchConsumeCallback,
       RecoverCallback<K, V> recoverCallback
@@ -193,19 +200,19 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
   }
 
   @Slf4j
-  public static class ConsumersBuilder<K, V> {
+  public static class Builder<K, V> {
 
-    public ConsumersBuilder() {
+    public Builder() {
       this.props = new LinkedHashMap<>();
       this.consumers = 1;
       this.pollTimeout = DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
       this.pollInterval = DefaultConsumingConfig.FPS_30_DURATION;
       this.retryPolicy = DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;
       this.topics = Collections.EMPTY_LIST;
-      this.consumerSupplier = ConsumerFactory.defaultConsumerSupplier();
+      this.consumerSupplier = ConsumerController.defaultConsumerSupplier();
     }
 
-    public ConsumersBuilder<K, V> consumers(int consumers) {
+    public Builder<K, V> consumers(int consumers) {
       if (this.consumers == Integer.MIN_VALUE) {
         log.info(
             "consumer was previously disabled by set it's value to {}, it won't be re enabled. groupId={}, topics={}",
@@ -219,23 +226,23 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
       return this;
     }
 
-    public ConsumersBuilder<K, V> topics(String... topics) {
+    public Builder<K, V> topics(String... topics) {
       this.topics = Arrays.asList(topics);
       return this;
     }
 
-    public ConsumersBuilder<K, V> topics(Collection<String> topics) {
+    public Builder<K, V> topics(Collection<String> topics) {
       this.topics = topics;
       return this;
     }
 
-    public ConsumersBuilder<K, V> prop(String key, Object value) {
+    public Builder<K, V> prop(String key, Object value) {
       this.props.put(key, value);
       return this;
     }
 
-    public Consumers<K, V> build() {
-      return new Consumers<>(
+    public ConsumerConfigDefault<K, V> build() {
+      return new ConsumerConfigDefault<>(
           this.props,
           this.consumers,
           this.topics,
@@ -256,6 +263,6 @@ public class Consumers<K, V> implements ConsumerCreateConfig<K, V>, ConsumingCon
 
   @Override
   public String toString() {
-    return String.format("Consumers(groupId=%s, topics=%s)", this.getGroupId(), this.topics);
+    return String.format("ConsumerConfig(groupId=%s, topics=%s)", this.getGroupId(), this.topics);
   }
 }

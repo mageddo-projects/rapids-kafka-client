@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
-import com.mageddo.kafka.client.Consumers;
+import com.mageddo.kafka.client.ConsumerConfigDefault;
 import com.mageddo.kafka.client.DefaultConsumer;
 
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -37,8 +37,8 @@ public class DefaultConsumerTemplates {
     }
 
     @Override
-    protected Consumers<K, V> consumerConfig() {
-      return Consumers
+    protected ConsumerConfigDefault<K, V> consumerConfig() {
+      return ConsumerConfigDefault
           .<K, V>builder()
           .topics(this.topic)
           .callback((callbackContext, record) -> {})

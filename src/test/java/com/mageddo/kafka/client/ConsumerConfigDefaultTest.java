@@ -8,13 +8,13 @@ import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
-class ConsumersTest {
+class ConsumerConfigDefaultTest {
 
   @Test
   void validateDefaultConfigs() {
 
     // arrange
-    final Consumers<String, byte[]> consumerConfig = Consumers
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigDefault
         .<String, byte[]>builder()
         .topics("topic")
         .build();
@@ -32,14 +32,14 @@ class ConsumersTest {
   @Test
   void mustCopy() {
     // arrange
-    final Consumers<String, byte[]> consumerConfig = Consumers
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigDefault
         .<String, byte[]>builder()
         .topics("topic")
         .prop(MAX_POLL_RECORDS_CONFIG, 30)
         .build();
 
     // act
-    final Consumers<String, byte[]> copy = consumerConfig.toBuilder()
+    final ConsumerConfigDefault<String, byte[]> copy = consumerConfig.toBuilder()
         .build();
 
     // assert
@@ -54,7 +54,7 @@ class ConsumersTest {
   @Test
   void consumersConfigMustStayDisabled() {
     // arrange
-    final Consumers<String, byte[]> consumerConfig = Consumers
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigDefault
         .<String, byte[]>builder()
         .consumers(Integer.MIN_VALUE)
         .consumers(5)
@@ -75,7 +75,7 @@ class ConsumersTest {
   void consumerMustStayDisabled() {
 
     // arrange
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .consumers(Integer.MIN_VALUE)
         .build();

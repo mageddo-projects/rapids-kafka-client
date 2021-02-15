@@ -21,9 +21,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class ConsumerFactoryTest {
+class ConsumerControllerTest {
 
-  private final ConsumerFactory<String, byte[]> consumerFactory = spy(new ConsumerFactory<>());
+  private final ConsumerController<String, byte[]> consumerController = spy(new ConsumerController<>());
 
   @Mock
   private ThreadConsumer threadConsumer;
@@ -33,7 +33,7 @@ class ConsumerFactoryTest {
 
     // arrange
     final String topic = "fruit_topic";
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .retryPolicy(RetryPolicy
             .builder()
@@ -44,14 +44,14 @@ class ConsumerFactoryTest {
         .build();
 
     doReturn(ConsumerTemplates.build(topic, Collections.emptyList()))
-        .when(this.consumerFactory)
+        .when(this.consumerController)
         .create(eq(consumerConfig));
 
     // act
-    this.consumerFactory.consume(consumerConfig);
+    this.consumerController.consume(consumerConfig);
 
     // assert
-    verify(this.consumerFactory).notifyNotRecommendedRetryPolicy(anyInt(), any(), anyLong());
+    verify(this.consumerController).notifyNotRecommendedRetryPolicy(anyInt(), any(), anyLong());
 
   }
 
@@ -60,7 +60,7 @@ class ConsumerFactoryTest {
 
     // arrange
     final String topic = "fruit_topic";
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigTemplates.build();
     consumerConfig
         .toBuilder()
         .retryPolicy(RetryPolicy
@@ -72,14 +72,14 @@ class ConsumerFactoryTest {
         .build();
 
     doReturn(ConsumerTemplates.build(topic, Collections.emptyList()))
-        .when(this.consumerFactory)
+        .when(this.consumerController)
         .create(eq(consumerConfig));
 
     // act
-    this.consumerFactory.consume(consumerConfig);
+    this.consumerController.consume(consumerConfig);
 
     // assert
-    verify(this.consumerFactory, never()).notifyNotRecommendedRetryPolicy(anyInt(), any(), anyLong());
+    verify(this.consumerController, never()).notifyNotRecommendedRetryPolicy(anyInt(), any(), anyLong());
 
   }
 

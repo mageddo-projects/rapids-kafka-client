@@ -15,13 +15,13 @@ import lombok.extern.slf4j.Slf4j;
 public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
-  private final Consumers<K, V> consumers;
+  private final ConsumerConfigDefault<K, V> consumerConfig;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
     final Retrier retrier = Retrier
         .builder()
-        .retryPolicy(this.consumers.retryPolicy())
+        .retryPolicy(this.consumerConfig.retryPolicy())
         .onRetry(() -> {
           log.info("failed to consume");
           for (final TopicPartition partition : records.partitions()) {
@@ -37,7 +37,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
               .lastFailure(lastFailure)
               .record(record)
               .build(),
-              this.consumers.recoverCallback()
+              this.consumerConfig.recoverCallback()
           ));
         })
         .build();
@@ -47,7 +47,7 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
         log.trace("status=consuming, records={}", records);
       }
       try {
-        this.consumers
+        this.consumerConfig
             .batchCallback()
             .accept(
                 DefaultCallbackContext
@@ -70,8 +70,8 @@ public class BatchConsumer<K, V> extends DefaultConsumer<K, V> {
   }
 
   @Override
-  protected Consumers<K, V> consumerConfig() {
-    return this.consumers;
+  protected ConsumerConfigDefault<K, V> consumerConfig() {
+    return this.consumerConfig;
   }
 
   private void commitFirstRecord(Consumer<K, V> consumer, ConsumerRecords<K, V> records, TopicPartition partition) {

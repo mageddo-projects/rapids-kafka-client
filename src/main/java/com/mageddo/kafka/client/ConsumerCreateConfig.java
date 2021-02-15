@@ -24,7 +24,7 @@ public interface ConsumerCreateConfig<K, V> {
    * Lambda function used to create the consumer instance, it's useful for component or integrated tests,
    * for example, mocking kafka by using {@link org.apache.kafka.clients.consumer.MockConsumer} instead of
    * {@link org.apache.kafka.clients.consumer.KafkaConsumer}.
-   * {@link ConsumerFactory#defaultConsumerSupplier()} is used by default.
+   * {@link ConsumerController#defaultConsumerSupplier()} is used by default.
    */
   ConsumerSupplier<K, V> consumerSupplier();
 }

@@ -34,7 +34,7 @@ class RecordConsumerTest {
     // arrange
     final AtomicInteger timesRetried = new AtomicInteger();
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .callback((ctx, record) -> {
           timesRetried.incrementAndGet();
@@ -73,7 +73,7 @@ class RecordConsumerTest {
 
     // arrange
     final AtomicBoolean recoverCalled = new AtomicBoolean();
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigTemplates
         .<String, byte[]>builder()
         .callback((ctx, record) -> {
           throw new RuntimeException("Failed consuming");
@@ -110,7 +110,7 @@ class RecordConsumerTest {
   void mustCommitAfterSuccessfullyConsume() {
     // arrange
     final AtomicInteger timesRetried = new AtomicInteger();
-    final Consumers<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
+    final ConsumerConfigDefault<String, byte[]> consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
         .toBuilder()
         .recoverCallback((ctx) -> {
           fail("Can't recover");
@@ -134,7 +134,7 @@ class RecordConsumerTest {
     assertEquals(1, timesRetried.get());
   }
 
-  protected RecordConsumer<String, byte[]> createConsumer(Consumers<String, byte[]> consumerConfig) {
+  protected RecordConsumer<String, byte[]> createConsumer(ConsumerConfigDefault<String, byte[]> consumerConfig) {
     return new RecordConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig);
   }
 

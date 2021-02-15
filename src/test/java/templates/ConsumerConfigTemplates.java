@@ -3,7 +3,8 @@ package templates;
 import java.time.Duration;
 import java.util.Collections;
 
-import com.mageddo.kafka.client.Consumers;
+import com.mageddo.kafka.client.ConsumerConfig;
+import com.mageddo.kafka.client.ConsumerConfigDefault;
 import com.mageddo.kafka.client.RetryPolicy;
 
 import lombok.experimental.UtilityClass;
@@ -11,12 +12,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ConsumerConfigTemplates {
 
-  public static <K, V> Consumers<K, V> build() {
+  public static <K, V> ConsumerConfigDefault<K, V> build() {
     return ConsumerConfigTemplates.<K, V>builder().build();
   }
 
-  public static <K, V> Consumers.ConsumersBuilder<K, V> builder() {
-    return Consumers.<K, V>builder()
+  public static <K, V> ConsumerConfigDefault.Builder<K, V> builder() {
+    return ConsumerConfig.<K, V>builder()
         .batchCallback((ctx, records) -> System.out.println("batch callback"))
         .callback((ctx, record) -> System.out.println("callback"))
         .consumers(3)
