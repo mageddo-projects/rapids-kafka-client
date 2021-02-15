@@ -1,4 +1,4 @@
-package com.mageddo.kafka.client.util;
+package com.mageddo.kafka.client;
 
 import com.mageddo.kafka.client.ConsumerConfig;
 

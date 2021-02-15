@@ -22,13 +22,13 @@ package com.mageddo.kafka.client;
  * </pre>
  *
  * When working with multiple consumers, there are better approaches though,
- * see {@link com.mageddo.kafka.client.util.ConsumerStarter}, for more details.
+ * see {@link ConsumerStarter}, for more details.
  *
  * @param <K> ConsumerRecord key type
  * @param <V> ConsumerRecord value type
  *
  * @see org.apache.kafka.clients.consumer.ConsumerRecord
- * @see com.mageddo.kafka.client.util.ConsumerStarter
+ * @see ConsumerStarter
  */
 public interface ConsumerConfig<K, V> extends ConsumerCreateConfig<K, V>, ConsumingConfig<K, V> {
   static <K, V> ConsumerConfigDefault.Builder<K, V> builder() {
