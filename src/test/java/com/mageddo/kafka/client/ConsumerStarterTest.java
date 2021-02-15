@@ -77,7 +77,7 @@ class ConsumerStarterTest {
         .pollTimeout(templatePollTimeout)
         .retryPolicy(DEFAULT_RETRY_STRATEGY)
         .build();
-    final var consumerStarter = spy(new ConsumerStarter(templateConfig));
+    final var consumerStarter = spy(new ConsumerStarter<>(templateConfig));
 
     final var consumerConfig = ConsumerConfig
         .builder()
@@ -110,7 +110,7 @@ class ConsumerStarterTest {
     final var templateConfig = ConsumerConfigTemplates.builder()
         .prop(GROUP_ID_CONFIG, "my_group_id")
         .build();
-    final var consumerStarter = spy(new ConsumerStarter(templateConfig));
+    final var consumerStarter = spy(new ConsumerStarter<>(templateConfig));
 
     final var groupId = "customGroupId";
     final var pollInterval = Duration.ofSeconds(33);
@@ -146,7 +146,6 @@ class ConsumerStarterTest {
     assertEquals(1, actualConfig.props().size());
 
   }
-
 
   @Test
   void mustNotOverrideConsumerThreadsWhenDefaultValueIsDisabled() {
