@@ -13,8 +13,9 @@ Kafka Client is a vanilla java library that makes it easy to consume data from k
 * [x] Designed to high throughput usage
 * [x] Individual record consuming
 * [x] Batch records consuming
-* [x] Frameworkless, but easily configurable to someone
-* [x] Commits are managed for you based on behavior
+* [x] Frameworkless, but easily configurable to some when wanted
+* [x] Commits managed for you based on behavior
+* [x] Low CPU usage 
 
 # Getting Started
 
