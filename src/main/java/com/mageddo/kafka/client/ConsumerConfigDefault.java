@@ -202,10 +202,8 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
 
   public static Builder<?, ?> copyToBuilder(ConsumerConfig<?, ?> primary, ConsumerConfig<?, ?> secondary){
     final Builder builder = ConsumerConfigDefault.builder();
-    primary
-        .props()
-        .forEach(builder::prop)
-    ;
+    fillWith(secondary, builder);
+    fillWith(primary, builder);
     return builder
         .callback(firstNonNull(primary.callback(), secondary.callback()))
         .batchCallback(firstNonNull(primary.batchCallback(), secondary.batchCallback()))
@@ -216,6 +214,12 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
         .consumerSupplier(firstNonNull(primary.consumerSupplier(), secondary.consumerSupplier()))
         .pollInterval(firstNonNull(primary.pollInterval(), secondary.pollInterval()))
         .pollTimeout(firstNonNull(primary.pollTimeout(), secondary.pollTimeout()));
+  }
+
+  private static void fillWith(ConsumerConfig<?, ?> source, Builder target) {
+    source
+        .props()
+        .forEach(target::prop);
   }
 
   @Slf4j

@@ -32,7 +32,7 @@ class ConsumerStarterTest {
   void mustStartConsumerUsingDefaultConfigs() {
 
     // arrange
-    final var templateConsumerConfig = ConsumerConfigTemplates.build();
+    final var templateConsumerConfig = ConsumerConfig.builder().build();
     final var consumerStarter = spy(new ConsumerStarter(templateConsumerConfig));
     final var groupId = "my_group_id";
     final var consumerConfig = ConsumerConfig
