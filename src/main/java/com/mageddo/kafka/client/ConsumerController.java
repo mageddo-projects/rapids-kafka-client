@@ -160,4 +160,8 @@ public class ConsumerController<K, V> implements AutoCloseable {
         this.consumerConfig.topics()
     );
   }
+
+  List<ThreadConsumer<K, V>> getConsumers() {
+    return consumers;
+  }
 }

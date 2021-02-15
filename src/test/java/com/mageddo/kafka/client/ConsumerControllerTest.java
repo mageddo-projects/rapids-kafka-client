@@ -3,15 +3,19 @@ package com.mageddo.kafka.client;
 import java.time.Duration;
 import java.util.Collections;
 
+import org.apache.kafka.clients.consumer.MockConsumer;
+import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.config.ConfigException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import lombok.SneakyThrows;
 import templates.ConsumerConfigTemplates;
 import templates.ConsumerTemplates;
 
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -106,7 +110,7 @@ class ConsumerControllerTest {
   }
 
   @Test
-  void mustUseDefaultConsumerSupplierWhenItsNotSet(){
+  void mustUseDefaultConsumerSupplierWhenItsNotSet() {
     // arrange
     final var topic = "fruit_topic";
     final var consumerConfig = ConsumerConfigTemplates.<String, byte[]>build()
@@ -116,9 +120,62 @@ class ConsumerControllerTest {
         .build();
 
     // act
+    // assert
     assertThrows(ConfigException.class, () -> this.consumerController.create(consumerConfig));
 
+  }
+
+  @SneakyThrows
+  @Test
+  void mustUseDefaultPollIntervalWhenItsNotSet() {
+    // arrange
+    final var consumerConfig = ConsumerConfig
+        .<String, byte[]>builder()
+        .consumerSupplier(config -> new MockConsumer<>(OffsetResetStrategy.EARLIEST))
+        .consumers(1)
+        .callback((callbackContext, record) -> System.out.println("nop"))
+        .build();
+
+//    Mockito
+//        .doAnswer(invocation -> {
+//          final var actual = (DefaultConsumer) invocation.callRealMethod();
+//          return new ThreadConsumer<>() {
+//
+//            @Override
+//            public void close() {
+//              actual.close();
+//            }
+//
+//            @Override
+//            public void start() {
+//              actual.executor = new Thread();
+//              actual.poll(actual.consumer(), actual.consumerConfig());
+//            }
+//
+//            @Override
+//            public String id() {
+//              return actual.id();
+//            }
+//          };
+//        })
+//        .when(this.consumerController)
+//        .getInstance(any(), any());
+
+
+    // act
+    this.consumerController.consume(consumerConfig);
+
     // assert
+    Thread.sleep(1000);
+    this.consumerController.close();
+    final var consumer = (DefaultConsumer) this.consumerController
+        .getConsumers()
+        .stream()
+        .findFirst()
+        .orElseThrow();
+
+    assertNull(consumer.getConsumerError());
+
   }
 
 }

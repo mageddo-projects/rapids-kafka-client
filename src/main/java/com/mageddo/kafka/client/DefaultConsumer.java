@@ -16,12 +16,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, AutoCloseable {
+public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
 
+  Thread executor;
   private AtomicBoolean started = new AtomicBoolean();
-  private Thread executor;
   private boolean closed;
   private boolean stopped;
+  private Exception consumerError;
 
   protected abstract void consume(ConsumerRecords<K, V> records);
 
@@ -56,23 +57,58 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
           log.trace("status=polled, records={}", records.count());
         }
         this.consume(records);
-        if (!Duration.ZERO.equals(consumingConfig.pollInterval())) {
-          this.sleep(consumingConfig.pollInterval());
-        }
+        this.conditionalSleep(consumingConfig);
       }
-    } catch (Exception e){
-      log.warn("consumer-failed, id={}", this.id(), e);
+    } catch (Exception e) {
+      log.error("status=consumer-stopped-by-failure, id={}", this.id(), e);
+      this.consumerError = e;
     } finally {
       try {
         consumer.close();
-      } catch (InterruptException e){}
+      } catch (InterruptException e) {
+      }
+      log.info("status=consumer-stopped, id={}", this.id());
+      this.stopped = true;
     }
-    log.debug("status=consumer-stopped, id={}", this.id());
-    this.stopped = true;
+  }
+
+  @Override
+  @SneakyThrows
+  public void close() {
+    if (this.isClosed()) {
+      log.warn("status=already-closed, id={}", this.id());
+      return;
+    }
+    log.debug("status=closing, id={}", this.id());
+    this.closed = true;
+    while (!this.isStopped()) {
+      this.conditionalSleep(this.consumerConfig());
+    }
+    log.info("status=closed, thread={}, config={}", this.id(), this.consumerConfig());
+  }
+
+  @Override
+  public String id() {
+    return String.format("%d-%s", this.executor.getId(), this.executor.getName());
+  }
+
+  public boolean isClosed() {
+    return this.closed;
+  }
+
+  public boolean isStopped() {
+    return this.stopped;
+  }
+
+  void conditionalSleep(ConsumingConfig<K, V> consumingConfig) {
+    if (consumingConfig.pollInterval() != null && !Duration.ZERO.equals(consumingConfig.pollInterval())) {
+      this.sleep(consumingConfig.pollInterval());
+    }
   }
 
   protected boolean mustRun() {
-    return !this.isClosed() && !Thread.currentThread().isInterrupted();
+    return !this.isClosed() && !Thread.currentThread()
+        .isInterrupted();
   }
 
   /**
@@ -100,37 +136,15 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer<K, V>, Aut
       recoverCallback.recover(ctx);
       commitSyncRecord(ctx.consumer(), ctx.record());
     } else {
-      log.warn("status=no recover callback was specified");
+      log.warn(
+          "status=no recover callback was specified, ConsumerRecord consume failed and will be discarded, err={}",
+          ctx.lastFailure()
+              .getMessage()
+      );
     }
   }
 
-  @SneakyThrows
-  @Override
-  public void close() {
-    if(this.isClosed()){
-      log.warn("status=already-closed, id={}", this.id());
-      return ;
-    }
-    log.debug("status=closing, id={}", this.id());
-    this.closed = true;
-    while (!this.isStopped()) {
-      Thread.sleep(this.consumerConfig()
-          .pollInterval()
-          .toMillis());
-    }
-    log.info("status=closed, thread={}, config={}", this.id(), this.consumerConfig());
-  }
-
-  @Override
-  public String id() {
-    return String.format("%d-%s", this.executor.getId(), this.executor.getName());
-  }
-
-  public boolean isClosed() {
-    return closed;
-  }
-
-  public boolean isStopped() {
-    return stopped;
+  Exception getConsumerError() {
+    return consumerError;
   }
 }
