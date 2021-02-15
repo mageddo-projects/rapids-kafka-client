@@ -11,9 +11,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.mageddo.kafka.client.ConsumerConfigDefault.CONSUMERS_NOT_SET;
-import static com.mageddo.kafka.client.internal.ObjectsUtils.firstNonNull;
-
 /**
  * This class make it easy to set default configs and create many consumers,
  * also states that consumers and make it easy to stop them later.
@@ -136,23 +133,7 @@ public class ConsumerStarter {
   }
 
   private ConsumerConfigDefault<?, ?> buildConsumer(ConsumerConfig<?, ?> config) {
-    final ConsumerConfigDefault.Builder builder = ConsumerConfigDefault.builderOf(this.config);
-    config
-        .props()
-        .forEach(builder::prop)
-    ;
-    return builder
-        .callback(firstNonNull(config.callback(), this.config.callback()))
-        .batchCallback(firstNonNull(config.batchCallback(), this.config.batchCallback()))
-        .topics(config.topics().isEmpty() ? this.config.topics() : config.topics())
-        .consumers(config.consumers() != CONSUMERS_NOT_SET ? config.consumers() : this.config.consumers())
-        .recoverCallback(firstNonNull(config.recoverCallback(), this.config.recoverCallback()))
-        .retryPolicy(firstNonNull(config.retryPolicy(), this.config.retryPolicy()))
-        .consumerSupplier(firstNonNull(config.consumerSupplier(), this.config.consumerSupplier()))
-        .pollInterval(firstNonNull(config.pollInterval(), this.config.pollInterval()))
-        .pollTimeout(firstNonNull(config.pollTimeout(), this.config.pollTimeout()))
-        .build()
-        ;
+    return ConsumerConfigDefault.copy(config, this.config);
   }
 
   ConsumerController<?, ?> start(ConsumerConfig<?, ?> consumerConfig) {

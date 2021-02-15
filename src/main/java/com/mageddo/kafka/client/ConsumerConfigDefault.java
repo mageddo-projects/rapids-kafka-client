@@ -20,6 +20,7 @@ import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 
+import static com.mageddo.kafka.client.internal.ObjectsUtils.firstNonNull;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG;
 
 
@@ -191,11 +192,30 @@ public class ConsumerConfigDefault<K, V> implements ConsumerConfig<K, V> {
         .join();
   }
 
-  public static Builder builderOf(ConsumerConfig<?, ?> config) {
-    if (config instanceof ConsumerConfigDefault) {
-      return ((ConsumerConfigDefault) config).toBuilder();
-    }
-    throw new UnsupportedOperationException("Until this moment, only ConsumerConfigDefault is supported");
+  public static Builder<?, ?> builderOf(ConsumerConfig<?, ?> config) {
+    return copyToBuilder(config, ConsumerConfigDefault.builder().build());
+  }
+
+  public static ConsumerConfigDefault<?, ?> copy(ConsumerConfig<?, ?> primary, ConsumerConfig<?, ?> secondary){
+    return copyToBuilder(primary, secondary).build();
+  }
+
+  public static Builder<?, ?> copyToBuilder(ConsumerConfig<?, ?> primary, ConsumerConfig<?, ?> secondary){
+    final Builder builder = ConsumerConfigDefault.builder();
+    primary
+        .props()
+        .forEach(builder::prop)
+    ;
+    return builder
+        .callback(firstNonNull(primary.callback(), secondary.callback()))
+        .batchCallback(firstNonNull(primary.batchCallback(), secondary.batchCallback()))
+        .topics(primary.topics().isEmpty() ? secondary.topics() : primary.topics())
+        .consumers(primary.consumers() != CONSUMERS_NOT_SET ? primary.consumers() : secondary.consumers())
+        .recoverCallback(firstNonNull(primary.recoverCallback(), secondary.recoverCallback()))
+        .retryPolicy(firstNonNull(primary.retryPolicy(), secondary.retryPolicy()))
+        .consumerSupplier(firstNonNull(primary.consumerSupplier(), secondary.consumerSupplier()))
+        .pollInterval(firstNonNull(primary.pollInterval(), secondary.pollInterval()))
+        .pollTimeout(firstNonNull(primary.pollTimeout(), secondary.pollTimeout()));
   }
 
   @Slf4j
