@@ -12,6 +12,14 @@ import lombok.extern.slf4j.Slf4j;
 
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG;
 
+/**
+ * Responsible to states and control consumer threads,
+ * here you can start consuming by passing a {@link ConsumerConfig},
+ * also can stop the consumer related threads
+ *
+ * @param <K>
+ * @param <V>
+ */
 @Slf4j
 public class ConsumerController<K, V> implements AutoCloseable {
 
@@ -22,6 +30,10 @@ public class ConsumerController<K, V> implements AutoCloseable {
 
   public static <K, V> ConsumerSupplier<K, V> defaultConsumerSupplier() {
     return config -> new KafkaConsumer<>(config.props());
+  }
+
+  public boolean isRunning() {
+    return this.started && !this.closed;
   }
 
   public void consume(ConsumerConfigDefault<K, V> consumerConfig) {
@@ -123,6 +135,8 @@ public class ConsumerController<K, V> implements AutoCloseable {
 
   @Override
   public String toString() {
-    return String.format("ConsumerController(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(), this.consumerConfig.topics());
+    return String.format("ConsumerController(groupId=%s, topics=%s)", this.consumerConfig.getGroupId(),
+        this.consumerConfig.topics()
+    );
   }
 }
