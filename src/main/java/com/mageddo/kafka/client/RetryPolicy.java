@@ -47,7 +47,7 @@ public class RetryPolicy {
       this.retryableExceptions.add(Exception.class);
     }
 
-      /**
+    /**
        * Replace all before handled exceptions by the informed
      */
     public RetryPolicyBuilder handleExceptions(Class<? extends Throwable>... exceptions) {
