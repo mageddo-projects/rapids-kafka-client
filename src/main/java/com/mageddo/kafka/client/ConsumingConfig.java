@@ -14,7 +14,7 @@ public interface ConsumingConfig<K, V> {
   /**
    * The callback which will be called after poll the {@link org.apache.kafka.clients.consumer.ConsumerRecords},
    * a loop will be made and this method called for every message.
-   * <br /><br />
+   * <br><br>
    * This callback will be disabled if {@link #batchCallback()} is set.
    */
   ConsumeCallback<K, V> callback();
@@ -22,7 +22,7 @@ public interface ConsumingConfig<K, V> {
   /**
    * The callback which will be called after poll the messages, all poll method call results will be passed to this
    * method.
-   * <br /><br />
+   * <br><br>
    * This callback disables {@link #callback()}
    */
   BatchConsumeCallback<K, V> batchCallback();
