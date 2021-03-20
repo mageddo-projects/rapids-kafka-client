@@ -153,7 +153,7 @@ class BatchConsumerTest {
 
 
   protected BatchConsumer<String, byte[]> createConsumer(ConsumerConfigDefault<String, byte[]> consumerConfig) {
-    return spy(new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig));
+    return spy(new BatchConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig, 0));
   }
 
 }

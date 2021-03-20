@@ -155,7 +155,7 @@ class RecordConsumerTest {
   }
 
   protected RecordConsumer<String, byte[]> createConsumer(ConsumerConfigDefault<String, byte[]> consumerConfig) {
-    return spy(new RecordConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig));
+    return spy(new RecordConsumer<>(spy(ConsumerTemplates.buildWithOnePartition(TOPIC)), consumerConfig, 0));
   }
 
 }

@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.mageddo.kafka.client.internal.ObjectsUtils;
+import com.mageddo.kafka.client.internal.Threads;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,6 +19,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
+import static com.mageddo.kafka.client.internal.StringUtils.clearNonAlpha;
 
 @Slf4j
 public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
@@ -34,6 +36,8 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
 
   protected abstract ConsumerConfig<K, V> consumerConfig();
 
+  protected abstract int getNumber();
+
   @Override
   public void start() {
     if (started.get()) {
@@ -41,7 +45,8 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
       return;
     }
     final Consumer<K, V> consumer = consumer();
-    this.executor = new Thread(() -> {
+
+    this.executor = newThread(() -> {
       this.poll(consumer, consumerConfig());
     });
     this.executor.start();
@@ -100,7 +105,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
 
   @Override
   public String id() {
-    return String.format("%d-%s_%s", this.executor.getId(), this.executor.getName(), this.consumerConfig());
+    return String.format("%d-%s", this.executor.getId(), this.executor.getName());
   }
 
   public boolean isClosed() {
@@ -158,6 +163,19 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
   }
 
   Exception getConsumerError() {
-    return consumerError;
+    return this.consumerError;
   }
+
+  private Thread newThread(Runnable r) {
+    return Threads.newThread(r, this.createThreadId());
+  }
+
+  private String createThreadId() {
+    return String.format(
+        "%s-%d",
+        clearNonAlpha(consumerConfig().groupId()),
+        this.getNumber()
+    );
+  }
+
 }

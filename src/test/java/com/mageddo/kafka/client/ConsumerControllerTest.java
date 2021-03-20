@@ -198,13 +198,13 @@ class ConsumerControllerTest {
         .create(any());
     doReturn(mock(ThreadConsumer.class))
         .when(this.consumerController)
-        .getInstance(any(), any());
+        .getInstance(any(), any(), anyInt());
 
     // act
     this.consumerController.consume(consumerConfig);
 
     // assert
-    verify(this.consumerController).getInstance(any(), any());
+    verify(this.consumerController).getInstance(any(), any(), anyInt());
 
   }
 
