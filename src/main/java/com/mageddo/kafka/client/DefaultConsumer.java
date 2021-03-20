@@ -172,13 +172,9 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
 
   private String createThreadId() {
     return String.format(
-        "%d-%s-%s",
-        this.getNumber(),
+        "%s-%d",
         clearNonAlpha(consumerConfig().groupId()),
-        clearNonAlpha(consumerConfig()
-            .topics()
-            .toString()
-        )
+        this.getNumber()
     );
   }
 
