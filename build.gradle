@@ -50,7 +50,6 @@ release {
   buildTasks = []
 }
 
-// se quiser que fique com o numero da versao que foi gerada release
 confirmReleaseVersion.doLast {
   def f = file("${project.projectDir}/README.md")
   f.text = f.text.replaceAll("(:\\ )*\\d+\\.\\d+\\.\\d+", "\$1${version}")
