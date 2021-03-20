@@ -1,6 +1,7 @@
 plugins {
   id "java-library"
   id "maven"
+  id 'net.researchgate.release' version '2.8.1'
 }
 
 apply from: "nexus.gradle"
@@ -36,4 +37,21 @@ test {
 compileTestJava {
   sourceCompatibility = JavaVersion.VERSION_11
   targetCompatibility = JavaVersion.VERSION_11
+}
+
+release {
+  project.ext.set("release.useAutomaticVersion", true)
+  git {
+    requireBranch = ''
+  }
+  failOnCommitNeeded = false
+  failOnPublishNeeded = false
+  failOnUnversionedFiles = false
+  buildTasks = []
+}
+
+// se quiser que fique com o numero da versao que foi gerada release
+confirmReleaseVersion.doLast {
+  def f = file("${project.projectDir}/README.md")
+  f.text = f.text.replaceAll("(:\\ )*\\d+\\.\\d+\\.\\d+", "\$1${version}")
 }
