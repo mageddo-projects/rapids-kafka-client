@@ -75,7 +75,7 @@ public class ConsumerController<K, V> implements AutoCloseable {
     this.checkReasonablePollInterval(consumerConfig);
 
     for (int i = 0; i < threads; i++) {
-      final ThreadConsumer<K, V> consumer = this.getInstance(this.create(consumerConfig), consumerConfig);
+      final ThreadConsumer<K, V> consumer = this.getInstance(this.create(consumerConfig), consumerConfig, i);
       consumer.start();
     }
     log.info(
@@ -84,11 +84,11 @@ public class ConsumerController<K, V> implements AutoCloseable {
     );
   }
 
-  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig) {
+  ThreadConsumer<K, V> getInstance(Consumer<K, V> consumer, ConsumerConfig<K, V> consumerConfig, int number) {
     if (consumerConfig.batchCallback() != null) {
-      return this.bindInstance(new BatchConsumer<>(consumer, consumerConfig));
+      return this.bindInstance(new BatchConsumer<>(consumer, consumerConfig, number));
     }
-    return this.bindInstance(new RecordConsumer<>(consumer, consumerConfig));
+    return this.bindInstance(new RecordConsumer<>(consumer, consumerConfig, number));
   }
 
   private ThreadConsumer<K, V> bindInstance(ThreadConsumer<K, V> consumer) {

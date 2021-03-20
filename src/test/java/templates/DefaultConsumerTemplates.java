@@ -46,6 +46,11 @@ public class DefaultConsumerTemplates {
           .build();
     }
 
+    @Override
+    protected int getNumber() {
+      return 0;
+    }
+
   }
 
   public static <K, V> MockedDefaultConsumer<K, V> build() {

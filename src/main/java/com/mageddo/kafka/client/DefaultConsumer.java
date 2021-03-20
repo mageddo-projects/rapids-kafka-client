@@ -36,6 +36,8 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
 
   protected abstract ConsumerConfig<K, V> consumerConfig();
 
+  protected abstract int getNumber();
+
   @Override
   public void start() {
     if (started.get()) {
@@ -44,9 +46,9 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
     }
     final Consumer<K, V> consumer = consumer();
 
-    this.executor = Threads.newThread(() -> {
+    this.executor = newThread(() -> {
       this.poll(consumer, consumerConfig());
-    }, this.createThreadId());
+    });
     this.executor.start();
     started.set(true);
   }
@@ -103,7 +105,7 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
 
   @Override
   public String id() {
-    return String.format("%d-%s_%s", this.executor.getId(), this.executor.getName(), this.consumerConfig());
+    return String.format("%d-%s", this.executor.getId(), this.executor.getName());
   }
 
   public boolean isClosed() {
@@ -164,9 +166,14 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
     return this.consumerError;
   }
 
+  private Thread newThread(Runnable r) {
+    return Threads.newThread(r, this.createThreadId());
+  }
+
   private String createThreadId() {
     return String.format(
-        "%s-%s",
+        "%d-%s-%s",
+        this.getNumber(),
         clearNonAlpha(consumerConfig().groupId()),
         clearNonAlpha(consumerConfig()
             .topics()

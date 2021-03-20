@@ -19,6 +19,7 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
 
   private final Consumer<K, V> consumer;
   private final ConsumerConfig<K, V> consumerConfig;
+  private final int number;
 
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
@@ -87,6 +88,11 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
   @Override
   protected ConsumerConfig<K, V> consumerConfig() {
     return this.consumerConfig;
+  }
+
+  @Override
+  protected int getNumber() {
+    return this.number;
   }
 
   RetryPolicy getRetryPolicy() {
