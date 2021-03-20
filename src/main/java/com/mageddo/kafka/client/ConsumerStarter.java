@@ -2,9 +2,8 @@ package com.mageddo.kafka.client;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import com.mageddo.kafka.client.internal.Threads;
@@ -104,32 +103,22 @@ public class ConsumerStarter<K, V> {
     this.stopped = true;
     log.info("status=stopping-consumers, toStop={}", this.factories.size());
     final ExecutorService executorService = Threads.createPool(5);
-    try {
-      final List<Future<String>> futures = new ArrayList<>();
-      for (ConsumerController<?, ?> factory : this.factories) {
-        futures.add(executorService.submit(() -> {
-          try {
-            factory.close();
-            return factory.toString();
-          } catch (Exception e) {
-            log.warn("status=failed-to-stop-consumer, consumer={}", factory);
-            return String.format("failed to stop: %s, %s", factory.toString(), e.getMessage());
-          }
-        }));
-      }
-      int stopped = 0;
-      for (Future<String> future : futures) {
+    final AtomicInteger stopped = new AtomicInteger(1);
+    for (int i = 0; i < this.factories.size(); i++) {
+      final ConsumerController<?, ?> factory = this.factories.get(i);
+      executorService.submit(() -> {
         try {
-          final String id = future.get();
-          log.info("status=stopped, {} of {}, factory={}", ++stopped, this.factories.size(), id);
-        } catch (InterruptedException | ExecutionException e) {
-          throw new RuntimeException(e);
+          factory.close();
+          log.info(
+              "status=stopped, {} of {}, factory={}",
+              stopped.getAndIncrement(), this.factories.size(), factory
+          );
+          return factory.toString();
+        } catch (Exception e) {
+          log.warn("status=failed-to-stop-consumer, consumer={}", factory);
+          return String.format("failed to stop: %s, %s", factory.toString(), e.getMessage());
         }
-      }
-    } finally {
-      executorService.shutdown();
-      log.info("status=consumers-stopped, count={}", this.factories.size());
-
+      });
     }
   }
 
