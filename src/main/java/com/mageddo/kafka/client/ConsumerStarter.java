@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+
+import com.mageddo.kafka.client.internal.Threads;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +103,7 @@ public class ConsumerStarter<K, V> {
     }
     this.stopped = true;
     log.info("status=stopping-consumers, toStop={}", this.factories.size());
-    final ExecutorService executorService = Executors.newScheduledThreadPool(5);
+    final ExecutorService executorService = Threads.createPool(5);
     try {
       final List<Future<String>> futures = new ArrayList<>();
       for (ConsumerController<?, ?> factory : this.factories) {

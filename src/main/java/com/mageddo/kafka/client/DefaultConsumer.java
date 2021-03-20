@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.mageddo.kafka.client.internal.ObjectsUtils;
+import com.mageddo.kafka.client.internal.Threads;
 
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,6 +19,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_POLL_TIMEOUT;
+import static com.mageddo.kafka.client.internal.StringUtils.clearNonAlpha;
 
 @Slf4j
 public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
@@ -41,9 +43,10 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
       return;
     }
     final Consumer<K, V> consumer = consumer();
-    this.executor = new Thread(() -> {
+
+    this.executor = Threads.newThread(() -> {
       this.poll(consumer, consumerConfig());
-    });
+    }, this.createThreadId());
     this.executor.start();
     started.set(true);
   }
@@ -158,6 +161,18 @@ public abstract class DefaultConsumer<K, V> implements ThreadConsumer {
   }
 
   Exception getConsumerError() {
-    return consumerError;
+    return this.consumerError;
   }
+
+  private String createThreadId() {
+    return String.format(
+        "%s-%s",
+        clearNonAlpha(consumerConfig().groupId()),
+        clearNonAlpha(consumerConfig()
+            .topics()
+            .toString()
+        )
+    );
+  }
+
 }
