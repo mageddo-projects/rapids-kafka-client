@@ -9,7 +9,7 @@ Kafka Client is a vanilla java library that makes it easy to consume data from k
 * [x] Consuming retry
 * [x] Consuming failover
 * [x] Designed to be easy to mock and test
-* [x] Designed to support slow consumers without kafka re balancing
+* [x] Designed to support slow consumers without kafka rebalancing
 * [x] Designed to high throughput usage
 * [x] Individual record consuming
 * [x] Batch records consuming

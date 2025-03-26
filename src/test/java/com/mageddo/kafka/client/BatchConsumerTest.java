@@ -9,10 +9,10 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.slf4j.Slf4j;
-import templates.ConsumerConfigTemplates;
-import templates.ConsumerRecordTemplates;
-import templates.ConsumerRecordsTemplates;
-import templates.ConsumerTemplates;
+import com.mageddo.kafka.client.templates.ConsumerConfigTemplates;
+import com.mageddo.kafka.client.templates.ConsumerRecordTemplates;
+import com.mageddo.kafka.client.templates.ConsumerRecordsTemplates;
+import com.mageddo.kafka.client.templates.ConsumerTemplates;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

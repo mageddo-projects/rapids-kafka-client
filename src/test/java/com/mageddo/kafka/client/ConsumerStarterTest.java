@@ -9,7 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import templates.ConsumerConfigTemplates;
+import com.mageddo.kafka.client.templates.ConsumerConfigTemplates;
 
 import static com.mageddo.kafka.client.ConsumerConfigDefault.CONSUMERS_NOT_SET;
 import static com.mageddo.kafka.client.DefaultConsumingConfig.DEFAULT_RETRY_STRATEGY;

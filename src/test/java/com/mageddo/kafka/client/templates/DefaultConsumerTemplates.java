@@ -1,4 +1,4 @@
-package templates;
+package com.mageddo.kafka.client.templates;
 
 import java.time.Duration;
 import java.util.Arrays;

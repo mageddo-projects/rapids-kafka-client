@@ -8,10 +8,10 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 
 import lombok.SneakyThrows;
-import templates.ConsumerConfigTemplates;
-import templates.DefaultConsumerTemplates;
-import templates.DefaultConsumerTemplates.MockedDefaultConsumer;
-import templates.PartitionInfoTemplates;
+import com.mageddo.kafka.client.templates.ConsumerConfigTemplates;
+import com.mageddo.kafka.client.templates.DefaultConsumerTemplates;
+import com.mageddo.kafka.client.templates.DefaultConsumerTemplates.MockedDefaultConsumer;
+import com.mageddo.kafka.client.templates.PartitionInfoTemplates;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;

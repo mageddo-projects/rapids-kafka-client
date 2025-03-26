@@ -1,4 +1,4 @@
-package templates;
+package com.mageddo.kafka.client.templates;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 

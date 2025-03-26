@@ -1,7 +1,9 @@
 package com.mageddo.kafka.client;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import com.mageddo.kafka.client.internal.ConsumerRecordUtils;
 import com.mageddo.kafka.client.internal.ObjectsUtils;
 
 import org.apache.kafka.clients.consumer.Consumer;
@@ -24,7 +26,10 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
   @Override
   protected void consume(ConsumerRecords<K, V> records) {
 
+    final int recordsCount = records.count();
+    final AtomicInteger n = new AtomicInteger(0);
     for (final ConsumerRecord<K, V> record : records) {
+      n.incrementAndGet();
       final AtomicBoolean recovered = new AtomicBoolean();
       Retrier
           .builder()
@@ -46,7 +51,10 @@ public class RecordConsumer<K, V> extends DefaultConsumer<K, V> {
             recovered.set(true);
           })
           .onRetry(() -> {
-            log.info("failed to consume");
+            log.info(
+                "status=failedToConsume, record={}, n={} of total={}",
+                ConsumerRecordUtils.toString(record), n.get(), recordsCount
+            );
             commitSyncRecord(this.consumer, record);
           })
           .build()

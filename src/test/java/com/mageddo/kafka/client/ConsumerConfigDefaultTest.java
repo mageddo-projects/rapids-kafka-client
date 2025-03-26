@@ -2,7 +2,7 @@ package com.mageddo.kafka.client;
 
 import org.junit.jupiter.api.Test;
 
-import templates.ConsumerConfigTemplates;
+import com.mageddo.kafka.client.templates.ConsumerConfigTemplates;
 
 import static com.mageddo.kafka.client.ConsumerConfigDefault.CONSUMERS_NOT_SET;
 import static org.apache.kafka.clients.consumer.ConsumerConfig.MAX_POLL_RECORDS_CONFIG;

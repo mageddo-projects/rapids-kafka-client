@@ -13,8 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import lombok.SneakyThrows;
-import templates.ConsumerConfigTemplates;
-import templates.ConsumerTemplates;
+import com.mageddo.kafka.client.templates.ConsumerConfigTemplates;
+import com.mageddo.kafka.client.templates.ConsumerTemplates;
 
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;

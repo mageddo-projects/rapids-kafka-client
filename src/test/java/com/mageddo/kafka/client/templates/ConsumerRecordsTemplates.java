@@ -1,4 +1,4 @@
-package templates;
+package com.mageddo.kafka.client.templates;
 
 import java.util.Arrays;
 import java.util.HashMap;
